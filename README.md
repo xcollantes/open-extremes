@@ -1,7 +1,8 @@
 # Open extremes
 
-Does NVDA set its daily low in the first 20 minutes of trading? This repo
-tests that against chance on 931 days of 1-minute bars, for NVDA, seven
+Do stocks reveal their daily low or high in the first X minutes of trading?
+This repo tests whether that happens on at least 60% of days (an arbitrary
+benchmark) and against chance, on 931 days of 1-minute bars for NVDA, seven
 other stocks, and SPY and QQQ as market controls.
 
 **Write-up:** [`docs/index.html`](docs/index.html) covers the motivation,

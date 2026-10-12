@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Early Highs and Lows</title>
-<meta name="description" content="Does NVDA set its daily low in the first 20 minutes of trading? A test against chance across 931 days and ten symbols.">
+<meta name="description" content="Do stocks set their daily low or high in the first minutes of trading? Tested against a 60% benchmark and against chance, on 931 days and ten symbols.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
@@ -114,6 +114,7 @@
   .fill { display: block; height: 100%; border-radius: 2px; background: var(--accent); width: calc(var(--v) / var(--max) * 100%); }
   .fill.base { background: var(--muted); }
   .fill.claim { background: repeating-linear-gradient(45deg, var(--t) 0 3px, transparent 3px 7px); }
+  .bench { position: absolute; top: -4px; bottom: -4px; left: calc(60 / var(--max) * 100% - 1px); border-left: 2px dashed var(--t); }
   .chance { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); left: calc(var(--c) / var(--max) * 100% - 1px); }
   .row .v { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
   .row .sub { grid-column: 2 / 4; font-size: 0.8rem; color: var(--muted); margin-top: -6px; }
@@ -123,10 +124,14 @@
   .key > span { display: inline-flex; align-items: center; gap: 8px; }
   .key .sw-bar { width: 18px; height: 10px; border-radius: 2px; background: var(--accent); }
   .key .sw-tick { width: 2px; height: 16px; background: var(--ink); }
+  .key .sw-bench { height: 16px; border-left: 2px dashed var(--t); }
 
   /* ===== Line chart ===== */
   .figure { display: flex; flex-direction: column; gap: 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 18px; }
-  .plot { position: relative; min-height: 240px; touch-action: pan-y; }
+  .panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  .panel { display: flex; flex-direction: column; gap: 4px; }
+  .panel-title { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+  .plot { position: relative; min-height: 200px; touch-action: pan-y; }
   .plot svg { display: block; overflow: visible; }
   .plot text { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
   .plot text.dl { font-family: var(--body); font-size: 12.5px; font-weight: 600; fill: var(--ink); }
@@ -151,12 +156,10 @@
   .facts dd { margin: 0; font-size: 0.92rem; font-weight: 500; }
 
   /* ===== Hypotheses list ===== */
-  .hyps { margin: 0; padding: 0; list-style: none; counter-reset: h; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
-  .hyps li { counter-increment: h; display: grid; grid-template-columns: 2.4rem 1fr; gap: 14px; padding: 16px 18px; border-bottom: 1px solid var(--rule); }
-  .hyps li:last-child { border-bottom: 0; }
-  .hyps li::before { content: "H" counter(h); font-family: var(--display); font-stretch: 87%; font-weight: 800; font-size: 1.4rem; line-height: 1; color: var(--accent); }
-  .hyps div { display: flex; flex-direction: column; gap: 4px; }
-  .hyps p { color: var(--muted); font-size: 0.95rem; }
+  .hyp { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; border: 1px solid var(--rule); border-left: 4px solid var(--accent); border-radius: 6px; background: var(--surface); }
+  .hyp h3 { font-size: 1.2rem; }
+  .hyp p { color: var(--muted); font-size: 0.95rem; }
+  .verdict-line { display: flex; align-items: center; font-family: var(--display); font-stretch: 87%; font-weight: 750; font-size: 1.25rem; }
 
   /* ===== Code block and footer ===== */
   pre { margin: 0; font-family: var(--mono); font-size: 0.82rem; line-height: 1.6; background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
@@ -170,6 +173,7 @@
     .facts div:nth-last-child(-n+2) { border-bottom: 0 !important; }
     .row, .axis-ticks { grid-template-columns: 6.5rem 1fr 4.5rem; gap: 8px; }
     .chart, .figure { padding: 14px; }
+    .panels { grid-template-columns: 1fr; }
     .syms .row, .syms .axis-ticks { grid-template-columns: 3.2rem 1fr 3.6rem; }
   }
 </style>
@@ -182,7 +186,7 @@
     <h1>Do stocks reveal their daily low or high in the first X minutes of trading?</h1>
     <p class="lede">If you could tell early in the day where a stock's daily low or high will be, you could trade on it: buy at the low, sell at the high, and ride the rest of the session on a prediction you can depend on.</p>
     <nav class="jump" aria-label="Jump to a section">
-      <a href="#why">Why</a><a href="#hypotheses">Hypotheses</a><a href="#method">Method</a><a href="#results">Results</a><a href="#conclusion">Conclusion</a><a href="#limitations">Limitations</a><a href="#reproduce">Reproduce</a>
+      <a href="#why">Why</a><a href="#hypothesis">Hypothesis</a><a href="#method">Method</a><a href="#results">Results</a><a href="#conclusion">Conclusion</a><a href="#limitations">Limitations</a><a href="#reproduce">Reproduce</a>
     </nav>
   </div>
 
@@ -190,20 +194,22 @@
     <div class="section-head">
       <h2>Why test this</h2>
     </div>
-    <p>Watch a stock for a few weeks and its low for the day often seems to come right after the open. If that were reliable for NVDA, it would make for a clean trade: buy at 09:50 ET and put a stop just under the 09:30 to 09:50 low. You know your risk before you enter.</p>
-    <p>Before trading it, I wanted two numbers: how often the low really is in by 09:50, and how often it would be if prices moved at random.</p>
+    <p>Watch a stock for a few weeks and its low or high for the day often seems to come right after the open. If that were reliable, it would make for a clean trade at 09:50 ET: buy with a stop just under the morning's low, or sell short with a stop just above its high. You know your risk before you enter.</p>
+    <p>Before trading it, I wanted two numbers: how often a stock's low or high really is in by 09:50, and how often it would be if prices moved at random.</p>
   </section>
 
-  <section id="hypotheses">
+  <section id="hypothesis">
     <div class="section-head">
-      <h2>Hypotheses</h2>
-      <p>The hypothesis named NVDA and the 20-minute window up front. Other windows, other symbols and the daily high are follow-ups.</p>
+      <h2>Hypothesis</h2>
     </div>
-    <ol class="hyps">
-      <li><div><h3>NVDA's daily low is set in the first 20 minutes on at least 80% of days.</h3><p>The strong claim, and the one the trade needs. It fails if the measured rate is clearly below 80%.</p></div></li>
-      <li><div><h3>The low lands in the first 20 minutes more often than chance.</h3><p>The weak claim: the open matters, even if not 80% of the time. It passes if the gap over chance is well above noise and shows up every year.</p></div></li>
-      <li><div><h3>Buying at 09:50 with a stop under the morning low makes money.</h3><p>Buy at the close of the 09:49 bar, place a stop just under the 09:30 to 09:50 low, and sell at 16:00. It passes if the average day is clearly positive.</p></div></li>
-    </ol>
+    <div class="hyp">
+      <h3>Stocks reveal their daily low or high early: in the first X minutes of trading, the day's low or the day's high is set on at least 60% of days.</h3>
+      <p>60% is an arbitrary benchmark, not a number from theory or past results.</p>
+    </div>
+    <ul class="plain">
+      <li>The main test is NVDA with X = 20 minutes (09:30 to 09:50 ET), both set before looking at results. Seven more stocks, plus SPY and QQQ as controls, are follow-ups.</li>
+      <li>"Low or high" counts a day if either extreme is set in the window. To trade it you need to know which one, so the low and the high are also measured on their own.</li>
+    </ul>
   </section>
 
   <section id="method">
@@ -218,10 +224,10 @@
       <div><dt>Market controls</dt><dd>SPY, QQQ</dd></div>
       <div><dt>Chance model</dt><dd>20,000 simulated days per symbol</dd></div>
     </dl>
-    <p>For each day I find the first 1-minute bar that touches the day's low. "Low set in the first 20 minutes" means that bar started before 09:50 ET. If two bars tie, the earlier one counts. Only full 09:30 to 16:00 sessions are used.</p>
+    <p>For each day I find the first 1-minute bar that touches the day's low, and the first that touches its high. The low counts as set in the first 20 minutes if its bar started before 09:50 ET, and the same goes for the high. If two bars tie, the earlier one counts. Only full 09:30 to 16:00 sessions are used.</p>
 
     <h3>What chance looks like</h3>
-    <p>Chance isn't 20 out of 390 minutes. Random price paths put their lows near the start or the end of the day more often than in the middle (the arcsine law), so even a plain random walk sets its low early far more often than 5% of the time. The open is also the most volatile part of the session, and bigger early moves pull the low even closer to the open.</p>
+    <p>Chance isn't 20 out of 390 minutes. Random price paths put their lows and highs near the start or the end of the day more often than in the middle (the arcsine law). The open is also the most volatile part of the session, and bigger early moves pull both extremes even closer to the open.</p>
     <p>So the baseline is a set of random days whose minute-by-minute volatility follows each symbol's own pattern. These paths have no direction you could predict. Beating them means the open does something that volatility alone doesn't explain. The gap between the real rate and this baseline is the <em>excess</em>, and <em>z</em> is that gap divided by its standard error. For a test chosen in advance, z above 2 is unlikely to be noise.</p>
 
     <h3>Considerations</h3>
@@ -238,91 +244,117 @@
       <h2>Results</h2>
     </div>
 
-    <div class="result" id="r-h1">
-      <h3>1. NVDA against H1</h3>
-      <div class="chart" role="img" aria-label="Share of days with the low set in the first 20 minutes: uniform guess 5.1%, random walk 14.4%, volatility-matched random walk 31.5%, NVDA actual 38.7%, H1 claim 80%.">
-        <div class="row"><span class="label">Uniform guess</span><span class="track"><span class="fill base" style="--v:5.1"></span></span><span class="v">5.1%</span><span class="sub">20 of 390 minutes</span></div>
-        <div class="row"><span class="label">Random walk</span><span class="track"><span class="fill base" style="--v:14.4"></span></span><span class="v">14.4%</span><span class="sub">Random prices, even volatility all day</span></div>
-        <div class="row"><span class="label">Vol-matched walk</span><span class="track"><span class="fill base" style="--v:31.5"></span></span><span class="v">31.5%</span><span class="sub">Random prices, NVDA's volatility pattern (chance)</span></div>
-        <div class="row"><span class="label">NVDA, actual</span><span class="track"><span class="fill" style="--v:38.7"></span></span><span class="v">38.7%</span><span class="sub">931 days</span></div>
-        <div class="row"><span class="label">H1 claim</span><span class="track"><span class="fill claim" style="--v:80"></span></span><span class="v">80%</span><span class="sub">The rate the trade idea needed</span></div>
+    <div class="result" id="r-nvda">
+      <h3>1. NVDA at 09:50</h3>
+      <div class="chart" role="img" aria-label="Share of NVDA days with the extreme set by 09:50, against chance and the 60% benchmark. Low or high: 72.5%, chance 63.1%. Low: 38.7%, chance 31.5%. High: 35.9%, chance 32.2%.">
+        <div class="key">
+          <span><span class="sw-bar"></span>Set by 09:50</span>
+          <span><span class="sw-tick"></span>Chance</span>
+          <span><span class="sw-bench"></span>60% benchmark</span>
+        </div>
+        <div class="row"><span class="label">Low or high</span><span class="track"><span class="fill" style="--v:72.5"></span><span class="chance" style="--c:63.1"></span><span class="bench"></span></span><span class="v">72.5%</span><span class="sub">Chance 63.1% · +9.4 pts · z 6.0</span></div>
+        <div class="row"><span class="label">Low</span><span class="track"><span class="fill" style="--v:38.7"></span><span class="chance" style="--c:31.5"></span><span class="bench"></span></span><span class="v">38.7%</span><span class="sub">Chance 31.5% · +7.1 pts · z 4.7</span></div>
+        <div class="row"><span class="label">High</span><span class="track"><span class="fill" style="--v:35.9"></span><span class="chance" style="--c:32.2"></span><span class="bench"></span></span><span class="v">35.9%</span><span class="sub">Chance 32.2% · +3.7 pts · z 2.4</span></div>
         <div class="axis-ticks"><span></span><div><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div><span></span></div>
       </div>
-      <p>The low was in by 09:50 on 38.7% of days, give or take 3.1 points (95% confidence). NVDA's low isn't in on 80% of days until 14:09 ET, more than four and a half hours into the session. <strong>H1 is rejected.</strong></p>
+      <p>NVDA's low or high was in by 09:50 on 72.5% of days, above the 60% benchmark. Random prices with NVDA's volatility clear it too, at 63.1%. With two extremes to catch and a volatile open, early extremes are common by chance alone. What chance doesn't explain is the 9.4-point gap (z = 6.0). Taken alone, the low (38.7%) and the high (35.9%) fall far short of 60%.</p>
     </div>
 
-    <div class="result" id="r-h2">
-      <h3>2. NVDA against chance, through the whole day</h3>
-      <div class="figure" id="curve">
+    <div class="result" id="r-day">
+      <h3>2. NVDA through the day</h3>
+      <div class="figure">
         <div class="key">
           <span><svg width="24" height="8" aria-hidden="true"><line class="l-obs" x1="0" x2="24" y1="4" y2="4"/></svg>NVDA</span>
-          <span><svg width="24" height="8" aria-hidden="true"><line class="l-vm" x1="0" x2="24" y1="4" y2="4"/></svg>Chance (vol-matched)</span>
-          <span><svg width="24" height="8" aria-hidden="true"><line class="l-rw" x1="0" x2="24" y1="4" y2="4"/></svg>Random walk</span>
-          <span><svg width="24" height="8" aria-hidden="true"><line class="l-h1" x1="0" x2="24" y1="4" y2="4"/></svg>H1 claim, 80%</span>
+          <span><svg width="24" height="8" aria-hidden="true"><line class="l-vm" x1="0" x2="24" y1="4" y2="4"/></svg>Chance</span>
+          <span><svg width="24" height="8" aria-hidden="true"><line class="l-h1" x1="0" x2="24" y1="4" y2="4"/></svg>60% benchmark</span>
         </div>
-        <div class="plot" role="img" aria-label="Share of NVDA days with the low set by each time of day. By 09:50: NVDA 38.7%, chance 31.5%, random walk 14.4%. By 10:30: 53.5% vs 45.3%. By 11:30: 64.9% vs 56.3%. NVDA reaches 80% at 14:09."></div>
+        <div class="panels">
+          <div class="panel"><span class="panel-title">Low or high</span><div class="plot" data-k="either" data-hit="11" role="img" aria-label="Share of NVDA days with the low or high set by each time. NVDA reaches 60% at 09:41, chance at 09:48."></div></div>
+          <div class="panel"><span class="panel-title">Low</span><div class="plot" data-k="low" data-hit="91" role="img" aria-label="Share of NVDA days with the low set by each time. NVDA reaches 60% at 11:01, chance at 12:01."></div></div>
+          <div class="panel"><span class="panel-title">High</span><div class="plot" data-k="high" data-hit="145" role="img" aria-label="Share of NVDA days with the high set by each time. NVDA reaches 60% at 11:55, chance at 12:01."></div></div>
+        </div>
         <details>
           <summary>Show the numbers</summary>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Low set by</th><th>NVDA</th><th>Chance</th><th>Excess</th><th>z</th><th>Random walk</th></tr></thead>
+              <thead><tr><th>Reaches 60% by</th><th>NVDA</th><th>Chance</th><th>NVDA ahead by</th></tr></thead>
               <tbody>
-                <tr><th>09:35</th><td class="num">25.2%</td><td class="num">19.9%</td><td class="num">+5.4</td><td class="num">4.1</td><td class="num">7.3%</td></tr>
-                <tr><th>09:40</th><td class="num">31.1%</td><td class="num">25.0%</td><td class="num">+6.2</td><td class="num">4.4</td><td class="num">10.2%</td></tr>
-                <tr class="ours"><th>09:50</th><td class="num">38.7%</td><td class="num">31.5%</td><td class="num">+7.1</td><td class="num">4.7</td><td class="num">14.4%</td></tr>
-                <tr><th>10:00</th><td class="num">42.5%</td><td class="num">36.2%</td><td class="num">+6.3</td><td class="num">4.0</td><td class="num">17.8%</td></tr>
-                <tr><th>10:30</th><td class="num">53.5%</td><td class="num">45.3%</td><td class="num">+8.2</td><td class="num">5.0</td><td class="num">25.3%</td></tr>
-                <tr><th>11:30</th><td class="num">64.9%</td><td class="num">56.3%</td><td class="num">+8.6</td><td class="num">5.3</td><td class="num">37.6%</td></tr>
+                <tr><th>Low or high</th><td class="num">09:41</td><td class="num">09:48</td><td class="num">7 min</td></tr>
+                <tr><th>Low</th><td class="num">11:01</td><td class="num">12:01</td><td class="num">60 min</td></tr>
+                <tr><th>High</th><td class="num">11:55</td><td class="num">12:01</td><td class="num">6 min</td></tr>
               </tbody>
             </table>
           </div>
         </details>
       </div>
-      <p>The gap over chance opens in the first five minutes and stays between 5 and 10 points for the first two hours. At 09:50 it's 7.1 points, with z = 4.7. <strong>H2 is supported.</strong> The day's high shows the same pattern, but weaker: it was in by 09:50 on 35.9% of days against 32.2% chance (z = 2.4).</p>
-      <p class="note">The largest gap, 9.7 points for the window ending 11:17, came from scanning every window, so it's a lead, not a result.</p>
+      <p>NVDA's low or high reaches 60% by 09:41, seven minutes before chance does. The low alone gets there at 11:01, an hour ahead of chance, and the high at 11:55, six minutes ahead. Both take more than 90 minutes.</p>
+      <p class="note">The largest gap for the low alone, 9.7 points for the window ending 11:17, came from scanning every window, so it's a lead, not a result.</p>
     </div>
 
     <div class="result" id="r-years">
       <h3>3. NVDA by year</h3>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Year</th><th>Days</th><th>Low in by 09:50</th><th>Gap over chance (31.5%)</th></tr></thead>
+          <thead><tr><th>Set by 09:50</th><th>Days</th><th>Low or high</th><th>Low</th><th>High</th></tr></thead>
           <tbody>
-            <tr><th>2023</th><td class="num">248</td><td class="num">38.3%</td><td class="num">+6.8</td></tr>
-            <tr><th>2024</th><td class="num">249</td><td class="num">41.8%</td><td class="num">+10.3</td></tr>
-            <tr><th>2025</th><td class="num">247</td><td class="num">38.1%</td><td class="num">+6.6</td></tr>
-            <tr><th>2026, to Sep</th><td class="num">187</td><td class="num">35.8%</td><td class="num">+4.3</td></tr>
+            <tr><th>2023</th><td class="num">248</td><td class="num">70.2%</td><td class="num">38.3%</td><td class="num">32.7%</td></tr>
+            <tr><th>2024</th><td class="num">249</td><td class="num">77.9%</td><td class="num">41.8%</td><td class="num">39.0%</td></tr>
+            <tr><th>2025</th><td class="num">247</td><td class="num">68.4%</td><td class="num">38.1%</td><td class="num">33.2%</td></tr>
+            <tr><th>2026, to Sep</th><td class="num">187</td><td class="num">73.8%</td><td class="num">35.8%</td><td class="num">39.6%</td></tr>
+            <tr class="ours"><th>Chance</th><td></td><td class="num">63.1%</td><td class="num">31.5%</td><td class="num">32.2%</td></tr>
           </tbody>
         </table>
       </div>
-      <p>The low beat chance every year, though the gap was smallest in 2026.</p>
+      <p>Low or high cleared 60% and beat chance in every year. The high alone was barely above chance in 2023 and 2025.</p>
     </div>
 
     <div class="result" id="r-symbols">
       <h3>4. Other symbols</h3>
-      <div class="chart syms" style="--max:50" role="img" aria-label="Share of days with the low set by 09:50, actual vs each symbol's own chance rate. CRWD 45.3% vs 35.2%. AAPL 40.6% vs 31.9%. GOOGL 41.4% vs 33.4%. NVDA 38.7% vs 31.5%. PLTR 41.1% vs 34.2%. INTC 38.9% vs 32.8%. TSLA 36.5% vs 32.0%. ORCL 36.2% vs 33.1%. QQQ 28.2% vs 24.6%. SPY 24.1% vs 21.1%.">
+      <div class="chart syms" role="img" aria-label="Share of days with the low or high set by 09:50, actual vs each symbol's own chance rate, against a 60% benchmark. CRWD 78.6% vs 69.4%. PLTR 76.5% vs 67.9%. GOOGL 76.4% vs 66.2%. INTC 75.2% vs 65.2%. AAPL 72.7% vs 63.6%. NVDA 72.5% vs 63.1%. TSLA 72.1% vs 63.9%. ORCL 71.4% vs 66.0%. QQQ 54.0% vs 49.8%. SPY 44.9% vs 42.7%.">
         <div class="key">
-          <span><span class="sw-bar"></span>Low in by 09:50</span>
+          <span><span class="sw-bar"></span>Low or high set by 09:50</span>
           <span><span class="sw-tick"></span>That symbol's chance rate</span>
+          <span><span class="sw-bench"></span>60% benchmark</span>
         </div>
-        <div class="row"><span class="label">CRWD</span><span class="track"><span class="fill" style="--v:45.3"></span><span class="chance" style="--c:35.2"></span></span><span class="v">45.3%</span><span class="sub">Chance 35.2% · +10.2 pts · z 6.5</span></div>
-        <div class="row"><span class="label">AAPL</span><span class="track"><span class="fill" style="--v:40.6"></span><span class="chance" style="--c:31.9"></span></span><span class="v">40.6%</span><span class="sub">Chance 31.9% · +8.7 pts · z 5.7</span></div>
-        <div class="row"><span class="label">GOOGL</span><span class="track"><span class="fill" style="--v:41.4"></span><span class="chance" style="--c:33.4"></span></span><span class="v">41.4%</span><span class="sub">Chance 33.4% · +7.9 pts · z 5.1</span></div>
-        <div class="row"><span class="label">NVDA</span><span class="track"><span class="fill" style="--v:38.7"></span><span class="chance" style="--c:31.5"></span></span><span class="v">38.7%</span><span class="sub">Chance 31.5% · +7.1 pts · z 4.7</span></div>
-        <div class="row"><span class="label">PLTR</span><span class="track"><span class="fill" style="--v:41.1"></span><span class="chance" style="--c:34.2"></span></span><span class="v">41.1%</span><span class="sub">Chance 34.2% · +6.9 pts · z 4.4</span></div>
-        <div class="row"><span class="label">INTC</span><span class="track"><span class="fill" style="--v:38.9"></span><span class="chance" style="--c:32.8"></span></span><span class="v">38.9%</span><span class="sub">Chance 32.8% · +6.1 pts · z 4.0</span></div>
-        <div class="row"><span class="label">TSLA</span><span class="track"><span class="fill" style="--v:36.5"></span><span class="chance" style="--c:32.0"></span></span><span class="v">36.5%</span><span class="sub">Chance 32.0% · +4.5 pts · z 3.0</span></div>
-        <div class="row"><span class="label">ORCL</span><span class="track"><span class="fill" style="--v:36.2"></span><span class="chance" style="--c:33.1"></span></span><span class="v">36.2%</span><span class="sub">Chance 33.1% · +3.1 pts · z 2.0</span></div>
-        <div class="row"><span class="label">QQQ</span><span class="track"><span class="fill base" style="--v:28.2"></span><span class="chance" style="--c:24.6"></span></span><span class="v">28.2%</span><span class="sub">Index fund · chance 24.6% · +3.6 pts · z 2.6</span></div>
-        <div class="row"><span class="label">SPY</span><span class="track"><span class="fill base" style="--v:24.1"></span><span class="chance" style="--c:21.1"></span></span><span class="v">24.1%</span><span class="sub">Index fund · chance 21.1% · +3.0 pts · z 2.2</span></div>
-        <div class="axis-ticks"><span></span><div><span>0%</span><span>25%</span><span>50%</span></div><span></span></div>
+        <div class="row"><span class="label">CRWD</span><span class="track"><span class="fill" style="--v:78.6"></span><span class="chance" style="--c:69.4"></span><span class="bench"></span></span><span class="v">78.6%</span><span class="sub">Chance 69.4% · +9.3 pts · z 6.1</span></div>
+        <div class="row"><span class="label">PLTR</span><span class="track"><span class="fill" style="--v:76.5"></span><span class="chance" style="--c:67.9"></span><span class="bench"></span></span><span class="v">76.5%</span><span class="sub">Chance 67.9% · +8.6 pts · z 5.6</span></div>
+        <div class="row"><span class="label">GOOGL</span><span class="track"><span class="fill" style="--v:76.4"></span><span class="chance" style="--c:66.2"></span><span class="bench"></span></span><span class="v">76.4%</span><span class="sub">Chance 66.2% · +10.2 pts · z 6.6</span></div>
+        <div class="row"><span class="label">INTC</span><span class="track"><span class="fill" style="--v:75.2"></span><span class="chance" style="--c:65.2"></span><span class="bench"></span></span><span class="v">75.2%</span><span class="sub">Chance 65.2% · +10.0 pts · z 6.4</span></div>
+        <div class="row"><span class="label">AAPL</span><span class="track"><span class="fill" style="--v:72.7"></span><span class="chance" style="--c:63.6"></span><span class="bench"></span></span><span class="v">72.7%</span><span class="sub">Chance 63.6% · +9.1 pts · z 5.8</span></div>
+        <div class="row"><span class="label">NVDA</span><span class="track"><span class="fill" style="--v:72.5"></span><span class="chance" style="--c:63.1"></span><span class="bench"></span></span><span class="v">72.5%</span><span class="sub">Chance 63.1% · +9.4 pts · z 6.0</span></div>
+        <div class="row"><span class="label">TSLA</span><span class="track"><span class="fill" style="--v:72.1"></span><span class="chance" style="--c:63.9"></span><span class="bench"></span></span><span class="v">72.1%</span><span class="sub">Chance 63.9% · +8.1 pts · z 5.2</span></div>
+        <div class="row"><span class="label">ORCL</span><span class="track"><span class="fill" style="--v:71.4"></span><span class="chance" style="--c:66.0"></span><span class="bench"></span></span><span class="v">71.4%</span><span class="sub">Chance 66.0% · +5.4 pts · z 3.5</span></div>
+        <div class="row"><span class="label">QQQ</span><span class="track"><span class="fill base" style="--v:54.0"></span><span class="chance" style="--c:49.8"></span><span class="bench"></span></span><span class="v">54.0%</span><span class="sub">Index fund · chance 49.8% · +4.2 pts · z 2.6</span></div>
+        <div class="row"><span class="label">SPY</span><span class="track"><span class="fill base" style="--v:44.9"></span><span class="chance" style="--c:42.7"></span><span class="bench"></span></span><span class="v">44.9%</span><span class="sub">Index fund · chance 42.7% · +2.2 pts · z 1.3</span></div>
+        <div class="axis-ticks"><span></span><div><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div><span></span></div>
       </div>
-      <p>Every stock beat its own chance rate at 09:50, by 3 to 10 points, and seven of the eight beat it by more than either index fund did. So early lows are mostly a single-stock effect rather than a market one. None of the stocks gets close to 80%. CRWD is highest at 45%.</p>
+      <details>
+        <summary>Show the low and the high on their own</summary>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Symbol</th><th>Low by 09:50</th><th>High by 09:50</th><th>Low reaches 60% by</th><th>High reaches 60% by</th></tr></thead>
+            <tbody>
+              <tr><th>CRWD</th><td class="num">45.3%</td><td class="num">36.5%</td><td class="num">10:35</td><td class="num">11:32</td></tr>
+              <tr><th>PLTR</th><td class="num">41.1%</td><td class="num">39.1%</td><td class="num">10:51</td><td class="num">11:18</td></tr>
+              <tr><th>GOOGL</th><td class="num">41.4%</td><td class="num">38.1%</td><td class="num">10:55</td><td class="num">11:36</td></tr>
+              <tr><th>INTC</th><td class="num">38.9%</td><td class="num">38.8%</td><td class="num">11:07</td><td class="num">11:23</td></tr>
+              <tr><th>AAPL</th><td class="num">40.6%</td><td class="num">35.1%</td><td class="num">11:26</td><td class="num">11:46</td></tr>
+              <tr class="ours"><th>NVDA</th><td class="num">38.7%</td><td class="num">35.9%</td><td class="num">11:01</td><td class="num">11:55</td></tr>
+              <tr><th>TSLA</th><td class="num">36.5%</td><td class="num">37.4%</td><td class="num">11:11</td><td class="num">11:17</td></tr>
+              <tr><th>ORCL</th><td class="num">36.2%</td><td class="num">38.1%</td><td class="num">11:33</td><td class="num">11:32</td></tr>
+              <tr><th>QQQ</th><td class="num">28.2%</td><td class="num">25.8%</td><td class="num">11:46</td><td class="num">13:13</td></tr>
+              <tr><th>SPY</th><td class="num">24.1%</td><td class="num">20.8%</td><td class="num">12:38</td><td class="num">13:48</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+      <p>All eight stocks set their low or high by 09:50 on 71% to 79% of days, and each beat its own chance rate by 5 to 10 points. But each stock's chance rate is already 63% to 69%, so clearing 60% says little on its own. The index funds don't clear 60% and barely beat chance. Taken alone, a stock's low reaches 60% between 10:35 and 11:33, and its high between 11:17 and 11:55.</p>
       <p class="note">Chance differs by symbol because each one's volatility is spread across the day differently. The index funds have a calmer open relative to the rest of the day, so their chance rate is lower.</p>
     </div>
 
     <div class="result" id="r-trade">
-      <h3>5. The trade (H3)</h3>
+      <h3>5. Does it pay?</h3>
+      <p>I tested the long side on NVDA: buy at the close of the 09:49 bar, place a stop just under the 09:30 to 09:50 low, and sell at 16:00.</p>
       <dl class="facts">
         <div><dt>Average day</dt><dd>+0.11%</dd></div>
         <div><dt>Median day</dt><dd>−0.23%</dd></div>
@@ -331,8 +363,8 @@
         <div><dt>Low held (39% of days)</dt><dd>+1.30% average</dd></div>
         <div><dt>Stopped out (61%)</dt><dd>−0.64% average</dd></div>
       </dl>
-      <p>On NVDA the trade averaged +0.11% a day before costs, but it lost money on most days. Buying at 09:50 and holding to the close with no stop made +0.074% a day, so most of the profit is NVDA drifting up during the day, which any 09:50 purchase would have caught. The stop added about 0.04% a day, and I didn't test that part on its own.</p>
-      <p>The short version (sell at 09:50, stop above the morning high) made +0.04% a day, with t = 0.8, which is indistinguishable from zero. <strong>H3 is not shown.</strong></p>
+      <p>The trade averaged +0.11% a day before costs, but it lost money on most days. Buying at 09:50 and holding to the close with no stop made +0.074% a day, so most of the profit is NVDA drifting up during the day, which any 09:50 purchase would have caught. The stop added about 0.04% a day, and I didn't test that part on its own.</p>
+      <p>The short version (sell at 09:50, stop above the morning high) made +0.04% a day, with t = 0.8, which is indistinguishable from zero.</p>
       <details>
         <summary>Show the trade on every symbol</summary>
         <div class="table-wrap">
@@ -361,17 +393,14 @@
     <div class="section-head">
       <h2>Conclusion</h2>
     </div>
-    <div class="table-wrap">
-      <table class="wrap">
-        <thead><tr><th>Hypothesis</th><th>Verdict</th><th>Evidence</th></tr></thead>
-        <tbody>
-          <tr><th>H1: low by 09:50 on 80% of days</th><td class="verdict"><span class="m n"></span>Rejected</td><td>38.7% of days</td></tr>
-          <tr><th>H2: more often than chance</th><td class="verdict"><span class="m f"></span>Supported</td><td>+7.1 points, z = 4.7. Holds every year and in all eight stocks, and is weaker in SPY and QQQ.</td></tr>
-          <tr><th>H3: the 09:50 trade pays</th><td class="verdict"><span class="m p"></span>Not shown</td><td>+0.11% a day before costs, mostly from NVDA rising during the day. The short side earned nothing.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p>Single stocks do set their lows early more often than chance would, and it's not a fluke of one year or one stock. But for NVDA that means 39% of days, not 80%, and the trade built on it earned little beyond what simply holding NVDA during the day earned. As tested, 09:50 isn't an entry point.</p>
+    <p class="verdict-line"><span class="m p"></span>Passes as worded, but it doesn't give a usable prediction.</p>
+    <ul class="plain">
+      <li>Every stock tested set its low or high by 09:50 on 71% to 79% of days, clearing the 60% benchmark. The index funds didn't.</li>
+      <li>Random prices with the same volatility clear 60% too, so the benchmark proves little. The stocks beat chance by 5 to 10 points, which is a real effect, but a modest one.</li>
+      <li>At 09:50 you don't know which extreme is in. The low or the high alone is in on 35% to 45% of days, and neither reaches 60% until after 10:30.</li>
+      <li>The long trade on NVDA earned +0.11% a day before costs, mostly from NVDA rising during the day.</li>
+    </ul>
+    <p>The first 20 minutes tell you that one of the day's extremes is probably in, but not which one. Without that, there's no trade to place.</p>
   </section>
 
   <section id="limitations">
@@ -379,18 +408,19 @@
       <h2>Limitations</h2>
     </div>
     <ul class="plain">
+      <li>The 60% benchmark is arbitrary, so the pass or fail verdict is too. The gap over chance doesn't depend on it.</li>
       <li>No trading costs. Spreads, fees and slippage are ignored, and every stop fills exactly at its price. Treat the trade results as a best case.</li>
       <li>In-sample only. Every number comes from the same 931 days, and nothing has been checked on data after Oct 1, 2026.</li>
-      <li>Many comparisons. Ten symbols, two sides of the day and 390 windows add up to a lot of tests, and the follow-up results carry that risk.</li>
+      <li>Many comparisons. Ten symbols, three measures (low, high, either) and 390 windows add up to a lot of tests, and the follow-up results carry that risk.</li>
       <li>Hand-picked symbols. All ten are large, heavily traded and mostly tech. Smaller or quieter stocks may behave differently.</li>
       <li>A rising market. SPY nearly doubled over the period, which flatters any trade that buys.</li>
       <li>The chance model's volatility pattern is fit to the same days it's tested on. It sets the size of moves, not their direction, so it can't create an edge. It can absorb effects that come purely from when volatility happens.</li>
-      <li>Nothing known at the open is used. The overnight gap, news and earnings days could all change where the low lands.</li>
+      <li>Nothing known at the open is used. The overnight gap, news and earnings days could all change where the extremes land.</li>
       <li>Early-close days, about three a year, are left out.</li>
     </ul>
     <h3>Next tests</h3>
     <ul class="plain">
-      <li>Split days by the opening gap. Gap-down days may set the low early more often, and gap-up days the high.</li>
+      <li>Split days by the opening gap, to see whether it tells you which extreme is in. Gap-down days may set the low early, and gap-up days the high.</li>
       <li>Re-run on data after Oct 1, 2026, with the 20-minute window fixed in advance.</li>
       <li>Add the bid-ask spread and stop slippage to the trade.</li>
     </ul>
@@ -415,49 +445,37 @@ uv run jupyter nbconvert --to notebook --execute --inplace open_extremes.ipynb</
 </main>
 
 <script>
-  // NVDA: share of days with the low set in the first x minutes, in %.
-  // From the notebook's hit-rate curves (section 1), sampled every 5 minutes.
-  const D = {"x":[1,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240,245,250,255,260,265,270,275,280,285,290,295,300,305,310,315,320,325,330,335,340,345,350,355,360,365,370,375,380,385,390],"obs":[13.43,25.24,31.15,34.91,38.67,41.46,42.53,45.11,46.94,48.44,50.38,52.09,53.49,54.99,56.18,57.36,58.11,58.97,59.94,61.65,62.84,63.37,64.23,64.55,64.88,65.63,66.17,66.6,67.24,67.88,68.53,69.07,69.82,70.14,71.0,71.32,71.75,72.07,72.61,72.93,73.25,73.9,74.22,74.76,74.97,75.19,75.83,76.69,77.23,77.44,77.98,78.3,78.73,78.84,79.05,79.81,80.02,80.34,80.88,81.85,82.28,82.81,83.14,83.67,84.21,84.75,84.85,85.5,86.25,86.68,87.54,87.86,88.51,89.69,90.44,90.98,92.37,94.52,100.0],"vm":[12.01,19.88,24.96,28.6,31.54,34.06,36.22,38.28,40.02,41.48,42.83,44.05,45.28,46.5,47.64,48.68,49.61,50.59,51.49,52.4,53.26,54.0,54.74,55.64,56.26,56.94,57.58,58.16,58.78,59.34,59.96,60.5,61.02,61.6,62.1,62.63,63.12,63.64,64.18,64.6,65.12,65.6,66.07,66.62,67.14,67.64,68.23,68.8,69.26,69.82,70.38,70.93,71.4,71.89,72.36,73.0,73.76,74.32,74.88,75.41,75.99,76.59,77.16,77.78,78.42,79.03,79.73,80.54,81.3,82.12,83.04,83.91,84.81,85.88,87.0,88.3,90.0,93.16,100.0],"rw":[4.06,7.26,10.17,12.5,14.37,16.1,17.75,19.16,20.66,21.81,22.96,24.18,25.32,26.51,27.67,28.74,29.73,30.76,31.7,32.78,33.75,34.62,35.58,36.74,37.6,38.47,39.36,40.18,40.98,41.75,42.7,43.48,44.28,45.12,45.85,46.66,47.46,48.26,49.22,49.92,50.8,51.6,52.41,53.21,54.09,54.86,55.69,56.58,57.38,58.21,59.04,59.86,60.72,61.57,62.48,63.4,64.44,65.26,66.14,67.02,68.02,69.07,70.05,71.11,72.18,73.27,74.34,75.54,76.74,78.05,79.46,80.83,82.4,84.03,85.79,87.78,90.22,93.16,100.0]};
+  // NVDA: share of days with the extreme set in the first x minutes, in %,
+  // and the vol-matched chance rate. From the notebook's hit-rate curves,
+  // sampled every 5 minutes.
+  const D = {"x":[1,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240,245,250,255,260,265,270,275,280,285,290,295,300,305,310,315,320,325,330,335,340,345,350,355,360,365,370,375,380,385,390],"either":[26.5,47.7,59.7,66.5,72.5,77.2,79.1,82.5,84.5,86.1,87.5,88.8,89.8,91.0,91.4,92.3,92.8,93.1,93.7,94.1,94.6,95.3,95.5,95.8,95.8,96.1,96.3,96.6,96.9,96.9,97.2,97.4,97.9,98.1,98.1,98.1,98.2,98.3,98.4,98.4,98.5,98.6,98.6,98.7,98.9,99.0,99.0,99.0,99.0,99.0,99.1,99.2,99.2,99.2,99.2,99.4,99.4,99.6,99.7,99.7,99.7,99.8,99.8,99.8,99.8,99.8,99.8,99.8,99.8,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0],"either_vm":[24.8,40.5,50.6,57.5,63.1,67.4,71.2,74.6,77.3,79.5,81.4,83.2,84.7,86.1,87.4,88.6,89.6,90.6,91.4,92.2,92.9,93.5,94.0,94.5,94.8,95.2,95.7,96.0,96.4,96.7,96.9,97.1,97.4,97.6,97.8,98.0,98.1,98.3,98.5,98.6,98.7,98.8,98.9,99.1,99.1,99.2,99.3,99.4,99.5,99.5,99.6,99.7,99.7,99.7,99.8,99.8,99.9,99.9,99.9,99.9,99.9,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0],"low":[13.4,25.2,31.1,34.9,38.7,41.5,42.5,45.1,46.9,48.4,50.4,52.1,53.5,55.0,56.2,57.4,58.1,59.0,59.9,61.7,62.8,63.4,64.2,64.6,64.9,65.6,66.2,66.6,67.2,67.9,68.5,69.1,69.8,70.1,71.0,71.3,71.8,72.1,72.6,72.9,73.3,73.9,74.2,74.8,75.0,75.2,75.8,76.7,77.2,77.4,78.0,78.3,78.7,78.8,79.1,79.8,80.0,80.3,80.9,81.8,82.3,82.8,83.1,83.7,84.2,84.7,84.9,85.5,86.3,86.7,87.5,87.9,88.5,89.7,90.4,91.0,92.4,94.5,100.0],"low_vm":[12.0,19.9,25.0,28.6,31.5,34.1,36.2,38.3,40.0,41.5,42.8,44.0,45.3,46.5,47.6,48.7,49.6,50.6,51.5,52.4,53.3,54.0,54.7,55.6,56.3,56.9,57.6,58.2,58.8,59.3,60.0,60.5,61.0,61.6,62.1,62.6,63.1,63.6,64.2,64.6,65.1,65.6,66.1,66.6,67.1,67.6,68.2,68.8,69.3,69.8,70.4,70.9,71.4,71.9,72.4,73.0,73.8,74.3,74.9,75.4,76.0,76.6,77.2,77.8,78.4,79.0,79.7,80.5,81.3,82.1,83.0,83.9,84.8,85.9,87.0,88.3,90.0,93.2,100.0],"high":[13.1,22.4,28.9,32.5,35.9,38.7,40.3,42.4,43.6,44.4,45.8,46.2,47.6,48.7,49.3,50.2,51.0,51.7,52.5,53.2,53.8,55.3,56.1,56.8,57.1,57.8,58.2,58.5,59.5,60.0,60.7,61.0,62.1,62.7,63.5,63.6,64.3,64.7,65.0,65.4,65.7,66.2,66.7,67.0,67.7,68.4,68.7,69.2,69.8,70.1,70.5,71.0,71.2,71.8,72.1,72.9,73.5,74.2,75.4,75.8,76.3,76.6,77.3,77.8,78.1,78.8,79.6,80.5,81.6,83.1,83.7,84.4,85.1,85.5,86.5,86.9,88.1,90.9,100.0],"high_vm":[12.8,20.6,25.8,29.2,32.2,34.5,36.6,38.7,40.4,41.9,43.3,44.6,45.9,46.9,48.0,49.2,50.2,51.1,51.9,52.8,53.6,54.3,54.9,55.6,56.4,57.0,57.6,58.4,59.0,59.5,60.0,60.4,61.1,61.7,62.2,62.8,63.3,63.9,64.3,64.9,65.5,66.0,66.5,67.1,67.7,68.3,68.8,69.4,69.9,70.5,71.0,71.5,72.0,72.5,73.1,73.7,74.3,74.8,75.3,75.9,76.5,77.2,77.8,78.4,78.9,79.5,80.2,81.0,81.7,82.6,83.3,84.1,85.0,85.9,87.1,88.4,90.1,93.5,100.0]};
 
   const clock = (m) => {
     const t = 570 + m;
     return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
   };
 
-  const plot = document.querySelector("#curve .plot");
-
-  function draw() {
-    const W = plot.clientWidth;
-    const H = Math.round(Math.max(240, Math.min(340, W * 0.5)));
-    const m = { l: 40, r: 10, t: 10, b: 26 };
+  function draw(plot) {
+    const k = plot.dataset.k, hit = +plot.dataset.hit;
+    const W = plot.clientWidth, H = 200;
+    const m = { l: 36, r: 8, t: 8, b: 24 };
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
     const xs = (v) => m.l + (v / 390) * iw;
     const ys = (v) => m.t + (1 - v / 100) * ih;
-    const path = (k) => "M" + D.x.map((x, i) => `${xs(x).toFixed(1)},${ys(D[k][i]).toFixed(1)}`).join("L");
+    const path = (key) => "M" + D.x.map((x, i) => `${xs(x).toFixed(1)},${ys(D[key][i]).toFixed(1)}`).join("L");
 
     let s = `<svg width="${W}" height="${H}" aria-hidden="true">`;
     for (let v = 0; v <= 100; v += 20) {
       s += `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${ys(v)}" y2="${ys(v)}"/>`;
       s += `<text x="${m.l - 6}" y="${ys(v) + 4}" text-anchor="end">${v}%</text>`;
     }
-    const ticks = W < 520 ? [30, 150, 270, 390] : [30, 90, 150, 210, 270, 330, 390];
-    for (const t of ticks) {
+    for (const t of [30, 210, 390]) {
       s += `<text x="${xs(t)}" y="${H - 6}" text-anchor="${t === 390 ? "end" : "middle"}">${clock(t)}</text>`;
     }
-
-    s += `<line class="l-mark" x1="${xs(20)}" x2="${xs(20)}" y1="${m.t}" y2="${m.t + ih}"/>`;
-    s += `<text x="${xs(20) + 5}" y="${m.t + ih - 6}">09:50</text>`;
-    s += `<line class="l-h1" x1="${m.l}" x2="${W - m.r}" y1="${ys(80)}" y2="${ys(80)}"/>`;
-    s += `<path class="l-rw" d="${path("rw")}"/><path class="l-vm" d="${path("vm")}"/><path class="l-obs" d="${path("obs")}"/>`;
-    s += `<circle class="dot" cx="${xs(279)}" cy="${ys(80)}" r="5"/>`;
-    s += `<text class="dl" x="${xs(279)}" y="${ys(80) - 10}" text-anchor="end">80% by 14:09</text>`;
-
-    if (W >= 520) {  // Narrow screens rely on the legend; the lines are too close to label.
-      const at = (k) => ys(D[k][D.x.indexOf(170)]);
-      s += `<text class="dl" x="${xs(170) - 6}" y="${at("obs") - 8}" text-anchor="end">NVDA</text>`;
-      s += `<text class="dl" x="${xs(170) + 6}" y="${at("vm") + 16}">Chance</text>`;
-      s += `<text class="dl" x="${xs(170) + 6}" y="${at("rw") + 16}">Random walk</text>`;
-    }
+    s += `<line class="l-h1" x1="${m.l}" x2="${W - m.r}" y1="${ys(60)}" y2="${ys(60)}"/>`;
+    s += `<path class="l-vm" d="${path(k + "_vm")}"/><path class="l-obs" d="${path(k)}"/>`;
+    s += `<circle class="dot" cx="${xs(hit)}" cy="${ys(60)}" r="5"/>`;
+    s += `<text class="dl" x="${W - m.r}" y="${ys(60) + 16}" text-anchor="end">60% by ${clock(hit)}</text>`;
     s += `<g class="hover" style="display:none"><line class="cross" y1="${m.t}" y2="${m.t + ih}"/>`;
     s += `<circle class="dot" r="4"/><circle class="dot" r="4" style="fill:var(--muted)"/></g>`;
     s += `<rect x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent"/></svg>`;
@@ -467,20 +485,19 @@ uv run jupyter nbconvert --to notebook --execute --inplace open_extremes.ipynb</
     const svg = plot.querySelector("svg"), hover = svg.querySelector(".hover");
     const [cross, d1, d2] = hover.children, tip = plot.querySelector(".tip");
     svg.lastElementChild.addEventListener("pointermove", (e) => {
-      const px = e.clientX - svg.getBoundingClientRect().left;
-      const min = ((px - m.l) / iw) * 390;
+      const min = ((e.clientX - svg.getBoundingClientRect().left - m.l) / iw) * 390;
       let i = 0;
       D.x.forEach((x, j) => { if (Math.abs(x - min) < Math.abs(D.x[i] - min)) i = j; });
       const x = xs(D.x[i]);
       cross.setAttribute("x1", x); cross.setAttribute("x2", x);
-      d1.setAttribute("cx", x); d1.setAttribute("cy", ys(D.obs[i]));
-      d2.setAttribute("cx", x); d2.setAttribute("cy", ys(D.vm[i]));
+      d1.setAttribute("cx", x); d1.setAttribute("cy", ys(D[k][i]));
+      d2.setAttribute("cx", x); d2.setAttribute("cy", ys(D[k + "_vm"][i]));
       hover.style.display = "";
-      tip.innerHTML = `<b>Low set by ${clock(D.x[i])} ET</b>NVDA <span>${D.obs[i].toFixed(1)}%</span><br>Chance <span>${D.vm[i].toFixed(1)}%</span><br>Random walk <span>${D.rw[i].toFixed(1)}%</span>`;
+      tip.innerHTML = `<b>Set by ${clock(D.x[i])} ET</b>NVDA <span>${D[k][i].toFixed(1)}%</span><br>Chance <span>${D[k + "_vm"][i].toFixed(1)}%</span>`;
       tip.style.display = "block";
       const left = x + 12 + tip.offsetWidth > W ? x - 12 - tip.offsetWidth : x + 12;
       tip.style.left = `${left}px`;
-      tip.style.top = `${m.t + ih - tip.offsetHeight - 30}px`;
+      tip.style.top = `${m.t + ih - tip.offsetHeight - 24}px`;
     });
     svg.lastElementChild.addEventListener("pointerleave", () => {
       hover.style.display = "none";
@@ -488,11 +505,13 @@ uv run jupyter nbconvert --to notebook --execute --inplace open_extremes.ipynb</
     });
   }
 
-  draw();
-  let width = plot.clientWidth;
-  new ResizeObserver(() => {
-    if (plot.clientWidth !== width) { width = plot.clientWidth; draw(); }
-  }).observe(plot);
+  for (const plot of document.querySelectorAll(".plot")) {
+    draw(plot);
+    let width = plot.clientWidth;
+    new ResizeObserver(() => {
+      if (plot.clientWidth !== width) { width = plot.clientWidth; draw(plot); }
+    }).observe(plot);
+  }
 </script>
 </body>
 </html>
