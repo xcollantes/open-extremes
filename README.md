@@ -1,9 +1,9 @@
 # Open extremes
 
 Do stocks reveal their daily low or high in the first X minutes of trading?
-This repo tests whether that happens on at least 60% of days (an arbitrary
-benchmark) and against chance, on 931 days of 1-minute bars for NVDA, seven
-other stocks, and SPY and QQQ as market controls.
+This repo finds how many minutes it takes until that happens on 60% of days
+(an arbitrary benchmark) for eight stocks, and compares them with chance and
+with SPY and QQQ, on 931 days of 1-minute bars.
 
 **Write-up:** [`docs/index.html`](docs/index.html) covers the motivation,
 hypotheses, method, results, conclusion, and limitations.

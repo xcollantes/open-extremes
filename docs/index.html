@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Early Highs and Lows</title>
-<meta name="description" content="Do stocks set their daily low or high in the first minutes of trading? Tested against a 60% benchmark and against chance, on 931 days and ten symbols.">
+<meta name="description" content="Do stocks set their daily low or high in the first minutes of trading? Eight stocks tested against a 60% benchmark, against chance, and against SPY and QQQ over 931 days.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
@@ -117,6 +117,8 @@
   .bench { position: absolute; top: -4px; bottom: -4px; left: calc(60 / var(--max) * 100% - 1px); border-left: 2px dashed var(--t); }
   .chance { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink); left: calc(var(--c) / var(--max) * 100% - 1px); }
   .row .v { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+  .row.sep { border-top: 1px solid var(--rule); padding-top: 8px; }
+  .row.avg .v { font-weight: 600; }
   .row .sub { grid-column: 2 / 4; font-size: 0.8rem; color: var(--muted); margin-top: -6px; }
   .axis-ticks { display: grid; grid-template-columns: 8.5rem 1fr 5.5rem; gap: 12px; font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
   .axis-ticks div { display: flex; justify-content: space-between; }
@@ -137,10 +139,10 @@
   .plot text.dl { font-family: var(--body); font-size: 12.5px; font-weight: 600; fill: var(--ink); }
   .grid { stroke: var(--rule); stroke-width: 1; }
   .l-obs { stroke: var(--accent); stroke-width: 2; fill: none; }
-  .l-vm { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 6 4; fill: none; }
-  .l-rw { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 1.5 3.5; stroke-linecap: round; fill: none; }
+  .l-each { stroke: var(--accent); stroke-width: 1; opacity: 0.3; fill: none; }
+  .l-qqq { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 6 4; fill: none; }
+  .l-spy { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 1.5 3.5; stroke-linecap: round; fill: none; }
   .l-h1 { stroke: var(--t); stroke-width: 1.5; stroke-dasharray: 6 4; fill: none; }
-  .l-mark { stroke: var(--ink); stroke-width: 1; }
   .dot { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
   .cross { stroke: var(--ink); stroke-width: 1; opacity: 0.5; }
   .tip { position: absolute; top: 0; pointer-events: none; background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 8px 10px; font-size: 0.8rem; line-height: 1.45; white-space: nowrap; display: none; }
@@ -195,7 +197,7 @@
       <h2>Why test this</h2>
     </div>
     <p>Watch a stock for a few weeks and its low or high for the day often seems to come right after the open. If that were reliable, it would make for a clean trade at 09:50 ET: buy with a stop just under the morning's low, or sell short with a stop just above its high. You know your risk before you enter.</p>
-    <p>Before trading it, I wanted two numbers: how often a stock's low or high really is in by 09:50, and how often it would be if prices moved at random.</p>
+    <p>Before trading it, I wanted to know three things: how often a stock's low or high really is in by 09:50, how that compares with the market as a whole, and how often it would happen if prices moved at random.</p>
   </section>
 
   <section id="hypothesis">
@@ -203,12 +205,14 @@
       <h2>Hypothesis</h2>
     </div>
     <div class="hyp">
-      <h3>Stocks reveal their daily low or high early: in the first X minutes of trading, the day's low or the day's high is set on at least 60% of days.</h3>
-      <p>60% is an arbitrary benchmark, not a number from theory or past results.</p>
+      <h3>Stocks reveal their daily low or high early: within the first X minutes of trading, the day's low or the day's high is set on at least 60% of days.</h3>
+      <p>X isn't fixed in advance. The test looks for the earliest X that gives a 60% reading. 60% is an arbitrary benchmark, not a number from theory or past results.</p>
     </div>
     <ul class="plain">
-      <li>The main test is NVDA with X = 20 minutes (09:30 to 09:50 ET), both set before looking at results. Seven more stocks, plus SPY and QQQ as controls, are follow-ups.</li>
+      <li>The test uses eight stocks, picked by hand: NVDA, TSLA, AAPL, GOOGL, CRWD, ORCL, INTC and PLTR.</li>
+      <li>SPY and QQQ are the benchmarks. They track the S&amp;P 500 and the Nasdaq-100, so no single company drives them. If the stocks look like them, the pattern belongs to the market, not to single stocks.</li>
       <li>"Low or high" counts a day if either extreme is set in the window. To trade it you need to know which one, so the low and the high are also measured on their own.</li>
+      <li>09:50 ET (X = 20) is a fixed reference point for comparing with chance, year by year, and for the trade.</li>
     </ul>
   </section>
 
@@ -221,10 +225,10 @@
       <div><dt>Days</dt><dd>931 full sessions per symbol</dd></div>
       <div><dt>Bars</dt><dd>1-minute, Alpaca SIP feed</dd></div>
       <div><dt>Stocks</dt><dd>NVDA, TSLA, AAPL, GOOGL, CRWD, ORCL, INTC, PLTR</dd></div>
-      <div><dt>Market controls</dt><dd>SPY, QQQ</dd></div>
+      <div><dt>Benchmarks</dt><dd>SPY, QQQ</dd></div>
       <div><dt>Chance model</dt><dd>20,000 simulated days per symbol</dd></div>
     </dl>
-    <p>For each day I find the first 1-minute bar that touches the day's low, and the first that touches its high. The low counts as set in the first 20 minutes if its bar started before 09:50 ET, and the same goes for the high. If two bars tie, the earlier one counts. Only full 09:30 to 16:00 sessions are used.</p>
+    <p>For each day I find the first 1-minute bar that touches the day's low, and the first that touches its high. If two bars tie, the earlier one counts. Then, for every X from 1 to 390 minutes, I count the share of days whose low or high was set within the first X minutes, and find the first X where that share reaches 60%. Only full 09:30 to 16:00 sessions are used. The stock average is the plain mean of the eight stocks' results.</p>
 
     <h3>What chance looks like</h3>
     <p>Chance isn't 20 out of 390 minutes. Random price paths put their lows and highs near the start or the end of the day more often than in the middle (the arcsine law). The open is also the most volatile part of the session, and bigger early moves pull both extremes even closer to the open.</p>
@@ -232,10 +236,9 @@
 
     <h3>Considerations</h3>
     <ul class="plain">
-      <li>SPY and QQQ are index funds, so no single company drives them. If a stock's rate looks like theirs, the pattern belongs to the market, not the stock.</li>
       <li>A real effect should show up in every year, not in one stretch of the market.</li>
       <li>The SIP feed covers every US exchange. IEX data alone sees a small slice of volume and can put the day's high and low in the wrong minute.</li>
-      <li>Scanning all 390 windows can turn up z near 3 on pure noise, so a peak found by scanning is a lead, not a result.</li>
+      <li>Picking the X that looks best can turn up z near 3 on pure noise. So the chance comparisons use the fixed 09:50 reference, not the X that looked best.</li>
     </ul>
   </section>
 
@@ -244,76 +247,70 @@
       <h2>Results</h2>
     </div>
 
-    <div class="result" id="r-nvda">
-      <h3>1. NVDA at 09:50</h3>
-      <div class="chart" role="img" aria-label="Share of NVDA days with the extreme set by 09:50, against chance and the 60% benchmark. Low or high: 72.5%, chance 63.1%. Low: 38.7%, chance 31.5%. High: 35.9%, chance 32.2%.">
+    <div class="result" id="r-60">
+      <h3>1. When the 60% reading comes</h3>
+      <div class="chart syms" style="--max:45" role="img" aria-label="Minutes after the open until the low or high is in on 60% of days, with chance: CRWD 7 vs 13. GOOGL 8 vs 14. INTC 9 vs 15. PLTR 9 vs 14. TSLA 10 vs 17. AAPL 10 vs 17. ORCL 10 vs 15. NVDA 11 vs 18. Stock average 9 vs 15. QQQ 26 vs 32. SPY 40 vs 43.">
         <div class="key">
-          <span><span class="sw-bar"></span>Set by 09:50</span>
+          <span><span class="sw-bar"></span>Minutes until the low or high is in on 60% of days (shorter is earlier)</span>
           <span><span class="sw-tick"></span>Chance</span>
-          <span><span class="sw-bench"></span>60% benchmark</span>
         </div>
-        <div class="row"><span class="label">Low or high</span><span class="track"><span class="fill" style="--v:72.5"></span><span class="chance" style="--c:63.1"></span><span class="bench"></span></span><span class="v">72.5%</span><span class="sub">Chance 63.1% · +9.4 pts · z 6.0</span></div>
-        <div class="row"><span class="label">Low</span><span class="track"><span class="fill" style="--v:38.7"></span><span class="chance" style="--c:31.5"></span><span class="bench"></span></span><span class="v">38.7%</span><span class="sub">Chance 31.5% · +7.1 pts · z 4.7</span></div>
-        <div class="row"><span class="label">High</span><span class="track"><span class="fill" style="--v:35.9"></span><span class="chance" style="--c:32.2"></span><span class="bench"></span></span><span class="v">35.9%</span><span class="sub">Chance 32.2% · +3.7 pts · z 2.4</span></div>
-        <div class="axis-ticks"><span></span><div><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div><span></span></div>
+        <div class="row"><span class="label">CRWD</span><span class="track"><span class="fill" style="--v:7"></span><span class="chance" style="--c:13"></span></span><span class="v">09:37</span><span class="sub">7 min · chance 13 min</span></div>
+        <div class="row"><span class="label">GOOGL</span><span class="track"><span class="fill" style="--v:8"></span><span class="chance" style="--c:14"></span></span><span class="v">09:38</span><span class="sub">8 min · chance 14 min</span></div>
+        <div class="row"><span class="label">INTC</span><span class="track"><span class="fill" style="--v:9"></span><span class="chance" style="--c:15"></span></span><span class="v">09:39</span><span class="sub">9 min · chance 15 min</span></div>
+        <div class="row"><span class="label">PLTR</span><span class="track"><span class="fill" style="--v:9"></span><span class="chance" style="--c:14"></span></span><span class="v">09:39</span><span class="sub">9 min · chance 14 min</span></div>
+        <div class="row"><span class="label">TSLA</span><span class="track"><span class="fill" style="--v:10"></span><span class="chance" style="--c:17"></span></span><span class="v">09:40</span><span class="sub">10 min · chance 17 min</span></div>
+        <div class="row"><span class="label">AAPL</span><span class="track"><span class="fill" style="--v:10"></span><span class="chance" style="--c:17"></span></span><span class="v">09:40</span><span class="sub">10 min · chance 17 min</span></div>
+        <div class="row"><span class="label">ORCL</span><span class="track"><span class="fill" style="--v:10"></span><span class="chance" style="--c:15"></span></span><span class="v">09:40</span><span class="sub">10 min · chance 15 min</span></div>
+        <div class="row"><span class="label">NVDA</span><span class="track"><span class="fill" style="--v:11"></span><span class="chance" style="--c:18"></span></span><span class="v">09:41</span><span class="sub">11 min · chance 18 min</span></div>
+        <div class="row avg sep"><span class="label">Avg</span><span class="track"><span class="fill" style="--v:9"></span><span class="chance" style="--c:15"></span></span><span class="v">09:39</span><span class="sub">Average of the eight stocks · 9 min · chance 15 min</span></div>
+        <div class="row sep"><span class="label">QQQ</span><span class="track"><span class="fill base" style="--v:26"></span><span class="chance" style="--c:32"></span></span><span class="v">09:56</span><span class="sub">Benchmark · 26 min · chance 32 min</span></div>
+        <div class="row"><span class="label">SPY</span><span class="track"><span class="fill base" style="--v:40"></span><span class="chance" style="--c:43"></span></span><span class="v">10:10</span><span class="sub">Benchmark · 40 min · chance 43 min</span></div>
+        <div class="axis-ticks"><span></span><div><span>0</span><span>15</span><span>30</span><span>45 min</span></div><span></span></div>
       </div>
-      <p>NVDA's low or high was in by 09:50 on 72.5% of days, above the 60% benchmark. Random prices with NVDA's volatility clear it too, at 63.1%. With two extremes to catch and a volatile open, early extremes are common by chance alone. What chance doesn't explain is the 9.4-point gap (z = 6.0). Taken alone, the low (38.7%) and the high (35.9%) fall far short of 60%.</p>
-    </div>
-
-    <div class="result" id="r-day">
-      <h3>2. NVDA through the day</h3>
+      <details>
+        <summary>Show the low and the high on their own</summary>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Reaches 60% by</th><th>Low</th><th>High</th></tr></thead>
+            <tbody>
+              <tr><th>CRWD</th><td class="num">10:35</td><td class="num">11:32</td></tr>
+              <tr><th>GOOGL</th><td class="num">10:55</td><td class="num">11:36</td></tr>
+              <tr><th>INTC</th><td class="num">11:07</td><td class="num">11:23</td></tr>
+              <tr><th>PLTR</th><td class="num">10:51</td><td class="num">11:18</td></tr>
+              <tr><th>TSLA</th><td class="num">11:11</td><td class="num">11:17</td></tr>
+              <tr><th>AAPL</th><td class="num">11:26</td><td class="num">11:46</td></tr>
+              <tr><th>ORCL</th><td class="num">11:33</td><td class="num">11:32</td></tr>
+              <tr><th>NVDA</th><td class="num">11:01</td><td class="num">11:55</td></tr>
+              <tr class="ours"><th>Stock avg</th><td class="num">11:01</td><td class="num">11:32</td></tr>
+              <tr><th>QQQ</th><td class="num">11:46</td><td class="num">13:13</td></tr>
+              <tr><th>SPY</th><td class="num">12:38</td><td class="num">13:48</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
       <div class="figure">
         <div class="key">
-          <span><svg width="24" height="8" aria-hidden="true"><line class="l-obs" x1="0" x2="24" y1="4" y2="4"/></svg>NVDA</span>
-          <span><svg width="24" height="8" aria-hidden="true"><line class="l-vm" x1="0" x2="24" y1="4" y2="4"/></svg>Chance</span>
+          <span><svg width="24" height="8" aria-hidden="true"><line class="l-each" x1="0" x2="24" y1="4" y2="4"/></svg>Each stock</span>
+          <span><svg width="24" height="8" aria-hidden="true"><line class="l-obs" x1="0" x2="24" y1="4" y2="4"/></svg>Stock average</span>
+          <span><svg width="24" height="8" aria-hidden="true"><line class="l-qqq" x1="0" x2="24" y1="4" y2="4"/></svg>QQQ</span>
+          <span><svg width="24" height="8" aria-hidden="true"><line class="l-spy" x1="0" x2="24" y1="4" y2="4"/></svg>SPY</span>
           <span><svg width="24" height="8" aria-hidden="true"><line class="l-h1" x1="0" x2="24" y1="4" y2="4"/></svg>60% benchmark</span>
         </div>
         <div class="panels">
-          <div class="panel"><span class="panel-title">Low or high</span><div class="plot" data-k="either" data-hit="11" role="img" aria-label="Share of NVDA days with the low or high set by each time. NVDA reaches 60% at 09:41, chance at 09:48."></div></div>
-          <div class="panel"><span class="panel-title">Low</span><div class="plot" data-k="low" data-hit="91" role="img" aria-label="Share of NVDA days with the low set by each time. NVDA reaches 60% at 11:01, chance at 12:01."></div></div>
-          <div class="panel"><span class="panel-title">High</span><div class="plot" data-k="high" data-hit="145" role="img" aria-label="Share of NVDA days with the high set by each time. NVDA reaches 60% at 11:55, chance at 12:01."></div></div>
+          <div class="panel"><span class="panel-title">Low or high · stocks 60% by 09:39</span><div class="plot" data-k="either" data-hit="9" role="img" aria-label="Share of days with the low or high set by each time. Stock average reaches 60% at 09:39, QQQ at 09:56, SPY at 10:10."></div></div>
+          <div class="panel"><span class="panel-title">Low · stocks 60% by 11:01</span><div class="plot" data-k="low" data-hit="91" role="img" aria-label="Share of days with the low set by each time. Stock average reaches 60% at 11:01, QQQ at 11:46, SPY at 12:38."></div></div>
+          <div class="panel"><span class="panel-title">High · stocks 60% by 11:32</span><div class="plot" data-k="high" data-hit="122" role="img" aria-label="Share of days with the high set by each time. Stock average reaches 60% at 11:32, QQQ at 13:13, SPY at 13:48."></div></div>
         </div>
-        <details>
-          <summary>Show the numbers</summary>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Reaches 60% by</th><th>NVDA</th><th>Chance</th><th>NVDA ahead by</th></tr></thead>
-              <tbody>
-                <tr><th>Low or high</th><td class="num">09:41</td><td class="num">09:48</td><td class="num">7 min</td></tr>
-                <tr><th>Low</th><td class="num">11:01</td><td class="num">12:01</td><td class="num">60 min</td></tr>
-                <tr><th>High</th><td class="num">11:55</td><td class="num">12:01</td><td class="num">6 min</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </details>
       </div>
-      <p>NVDA's low or high reaches 60% by 09:41, seven minutes before chance does. The low alone gets there at 11:01, an hour ahead of chance, and the high at 11:55, six minutes ahead. Both take more than 90 minutes.</p>
-      <p class="note">The largest gap for the low alone, 9.7 points for the window ending 11:17, came from scanning every window, so it's a lead, not a result.</p>
+      <p>Every stock's low or high is in on 60% of days within the first 7 to 11 minutes, by 09:41 at the latest. QQQ takes 26 minutes and SPY 40. Random prices get each stock there only 5 to 7 minutes later. Taken alone, the extremes take much longer: the low reaches 60% between 10:35 and 11:33, and the high between 11:17 and 11:55. The benchmarks' highs don't get there until after 13:00.</p>
     </div>
 
-    <div class="result" id="r-years">
-      <h3>3. NVDA by year</h3>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Set by 09:50</th><th>Days</th><th>Low or high</th><th>Low</th><th>High</th></tr></thead>
-          <tbody>
-            <tr><th>2023</th><td class="num">248</td><td class="num">70.2%</td><td class="num">38.3%</td><td class="num">32.7%</td></tr>
-            <tr><th>2024</th><td class="num">249</td><td class="num">77.9%</td><td class="num">41.8%</td><td class="num">39.0%</td></tr>
-            <tr><th>2025</th><td class="num">247</td><td class="num">68.4%</td><td class="num">38.1%</td><td class="num">33.2%</td></tr>
-            <tr><th>2026, to Sep</th><td class="num">187</td><td class="num">73.8%</td><td class="num">35.8%</td><td class="num">39.6%</td></tr>
-            <tr class="ours"><th>Chance</th><td></td><td class="num">63.1%</td><td class="num">31.5%</td><td class="num">32.2%</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p>Low or high cleared 60% and beat chance in every year. The high alone was barely above chance in 2023 and 2025.</p>
-    </div>
-
-    <div class="result" id="r-symbols">
-      <h3>4. Other symbols</h3>
-      <div class="chart syms" role="img" aria-label="Share of days with the low or high set by 09:50, actual vs each symbol's own chance rate, against a 60% benchmark. CRWD 78.6% vs 69.4%. PLTR 76.5% vs 67.9%. GOOGL 76.4% vs 66.2%. INTC 75.2% vs 65.2%. AAPL 72.7% vs 63.6%. NVDA 72.5% vs 63.1%. TSLA 72.1% vs 63.9%. ORCL 71.4% vs 66.0%. QQQ 54.0% vs 49.8%. SPY 44.9% vs 42.7%.">
+    <div class="result" id="r-950">
+      <h3>2. At 09:50</h3>
+      <div class="chart syms" role="img" aria-label="Share of days with the low or high set by 09:50, actual vs each symbol's own chance rate, against a 60% benchmark. CRWD 78.6% vs 69.4%. PLTR 76.5% vs 67.9%. GOOGL 76.4% vs 66.2%. INTC 75.2% vs 65.2%. AAPL 72.7% vs 63.6%. NVDA 72.5% vs 63.1%. TSLA 72.1% vs 63.9%. ORCL 71.4% vs 66.0%. Stock average 74.4% vs 65.7%. QQQ 54.0% vs 49.8%. SPY 44.9% vs 42.7%.">
         <div class="key">
           <span><span class="sw-bar"></span>Low or high set by 09:50</span>
-          <span><span class="sw-tick"></span>That symbol's chance rate</span>
+          <span><span class="sw-tick"></span>Chance</span>
           <span><span class="sw-bench"></span>60% benchmark</span>
         </div>
         <div class="row"><span class="label">CRWD</span><span class="track"><span class="fill" style="--v:78.6"></span><span class="chance" style="--c:69.4"></span><span class="bench"></span></span><span class="v">78.6%</span><span class="sub">Chance 69.4% · +9.3 pts · z 6.1</span></div>
@@ -324,68 +321,84 @@
         <div class="row"><span class="label">NVDA</span><span class="track"><span class="fill" style="--v:72.5"></span><span class="chance" style="--c:63.1"></span><span class="bench"></span></span><span class="v">72.5%</span><span class="sub">Chance 63.1% · +9.4 pts · z 6.0</span></div>
         <div class="row"><span class="label">TSLA</span><span class="track"><span class="fill" style="--v:72.1"></span><span class="chance" style="--c:63.9"></span><span class="bench"></span></span><span class="v">72.1%</span><span class="sub">Chance 63.9% · +8.1 pts · z 5.2</span></div>
         <div class="row"><span class="label">ORCL</span><span class="track"><span class="fill" style="--v:71.4"></span><span class="chance" style="--c:66.0"></span><span class="bench"></span></span><span class="v">71.4%</span><span class="sub">Chance 66.0% · +5.4 pts · z 3.5</span></div>
-        <div class="row"><span class="label">QQQ</span><span class="track"><span class="fill base" style="--v:54.0"></span><span class="chance" style="--c:49.8"></span><span class="bench"></span></span><span class="v">54.0%</span><span class="sub">Index fund · chance 49.8% · +4.2 pts · z 2.6</span></div>
-        <div class="row"><span class="label">SPY</span><span class="track"><span class="fill base" style="--v:44.9"></span><span class="chance" style="--c:42.7"></span><span class="bench"></span></span><span class="v">44.9%</span><span class="sub">Index fund · chance 42.7% · +2.2 pts · z 1.3</span></div>
+        <div class="row avg sep"><span class="label">Avg</span><span class="track"><span class="fill" style="--v:74.4"></span><span class="chance" style="--c:65.7"></span><span class="bench"></span></span><span class="v">74.4%</span><span class="sub">Average of the eight stocks · chance 65.7% · +8.8 pts</span></div>
+        <div class="row sep"><span class="label">QQQ</span><span class="track"><span class="fill base" style="--v:54.0"></span><span class="chance" style="--c:49.8"></span><span class="bench"></span></span><span class="v">54.0%</span><span class="sub">Benchmark · chance 49.8% · +4.2 pts · z 2.6</span></div>
+        <div class="row"><span class="label">SPY</span><span class="track"><span class="fill base" style="--v:44.9"></span><span class="chance" style="--c:42.7"></span><span class="bench"></span></span><span class="v">44.9%</span><span class="sub">Benchmark · chance 42.7% · +2.2 pts · z 1.3</span></div>
         <div class="axis-ticks"><span></span><div><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div><span></span></div>
       </div>
       <details>
         <summary>Show the low and the high on their own</summary>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Symbol</th><th>Low by 09:50</th><th>High by 09:50</th><th>Low reaches 60% by</th><th>High reaches 60% by</th></tr></thead>
+            <thead><tr><th>By 09:50</th><th>Low</th><th>Low, chance</th><th>High</th><th>High, chance</th></tr></thead>
             <tbody>
-              <tr><th>CRWD</th><td class="num">45.3%</td><td class="num">36.5%</td><td class="num">10:35</td><td class="num">11:32</td></tr>
-              <tr><th>PLTR</th><td class="num">41.1%</td><td class="num">39.1%</td><td class="num">10:51</td><td class="num">11:18</td></tr>
-              <tr><th>GOOGL</th><td class="num">41.4%</td><td class="num">38.1%</td><td class="num">10:55</td><td class="num">11:36</td></tr>
-              <tr><th>INTC</th><td class="num">38.9%</td><td class="num">38.8%</td><td class="num">11:07</td><td class="num">11:23</td></tr>
-              <tr><th>AAPL</th><td class="num">40.6%</td><td class="num">35.1%</td><td class="num">11:26</td><td class="num">11:46</td></tr>
-              <tr class="ours"><th>NVDA</th><td class="num">38.7%</td><td class="num">35.9%</td><td class="num">11:01</td><td class="num">11:55</td></tr>
-              <tr><th>TSLA</th><td class="num">36.5%</td><td class="num">37.4%</td><td class="num">11:11</td><td class="num">11:17</td></tr>
-              <tr><th>ORCL</th><td class="num">36.2%</td><td class="num">38.1%</td><td class="num">11:33</td><td class="num">11:32</td></tr>
-              <tr><th>QQQ</th><td class="num">28.2%</td><td class="num">25.8%</td><td class="num">11:46</td><td class="num">13:13</td></tr>
-              <tr><th>SPY</th><td class="num">24.1%</td><td class="num">20.8%</td><td class="num">12:38</td><td class="num">13:48</td></tr>
+              <tr><th>CRWD</th><td class="num">45.3%</td><td class="num">35.2%</td><td class="num">36.5%</td><td class="num">35.6%</td></tr>
+              <tr><th>PLTR</th><td class="num">41.1%</td><td class="num">34.2%</td><td class="num">39.1%</td><td class="num">34.8%</td></tr>
+              <tr><th>GOOGL</th><td class="num">41.4%</td><td class="num">33.4%</td><td class="num">38.1%</td><td class="num">33.8%</td></tr>
+              <tr><th>INTC</th><td class="num">38.9%</td><td class="num">32.8%</td><td class="num">38.8%</td><td class="num">33.3%</td></tr>
+              <tr><th>AAPL</th><td class="num">40.6%</td><td class="num">31.9%</td><td class="num">35.1%</td><td class="num">32.4%</td></tr>
+              <tr><th>NVDA</th><td class="num">38.7%</td><td class="num">31.5%</td><td class="num">35.9%</td><td class="num">32.2%</td></tr>
+              <tr><th>TSLA</th><td class="num">36.5%</td><td class="num">32.0%</td><td class="num">37.4%</td><td class="num">32.7%</td></tr>
+              <tr><th>ORCL</th><td class="num">36.2%</td><td class="num">33.1%</td><td class="num">38.1%</td><td class="num">33.8%</td></tr>
+              <tr class="ours"><th>Stock avg</th><td class="num">39.8%</td><td class="num">33.0%</td><td class="num">37.4%</td><td class="num">33.6%</td></tr>
+              <tr><th>QQQ</th><td class="num">28.2%</td><td class="num">24.6%</td><td class="num">25.8%</td><td class="num">25.2%</td></tr>
+              <tr><th>SPY</th><td class="num">24.1%</td><td class="num">21.1%</td><td class="num">20.8%</td><td class="num">21.6%</td></tr>
             </tbody>
           </table>
         </div>
       </details>
-      <p>All eight stocks set their low or high by 09:50 on 71% to 79% of days, and each beat its own chance rate by 5 to 10 points. But each stock's chance rate is already 63% to 69%, so clearing 60% says little on its own. The index funds don't clear 60% and barely beat chance. Taken alone, a stock's low reaches 60% between 10:35 and 11:33, and its high between 11:17 and 11:55.</p>
-      <p class="note">Chance differs by symbol because each one's volatility is spread across the day differently. The index funds have a calmer open relative to the rest of the day, so their chance rate is lower.</p>
+      <p>At the fixed 09:50 reference, all eight stocks have their low or high in on more than 60% of days, 74.4% on average. Neither benchmark did: QQQ reached 54.0% and SPY 44.9%. Each stock also beat its own chance rate, by 5 to 10 points (8.8 on average), about twice QQQ's gap and four times SPY's. But chance alone clears 60% for every stock (63% to 69%), so the 60% line says little by itself. Taken alone, the low and the high fall well short: 39.8% and 37.4% for the average stock.</p>
+      <p class="note">Chance differs by symbol because each one's volatility is spread across the day differently. The benchmarks have a calmer open relative to the rest of the day, so their chance rate is lower.</p>
+    </div>
+
+    <div class="result" id="r-best">
+      <h3>3. Best performers</h3>
+      <ul class="plain">
+        <li>Low or high: CRWD reaches 60% first, at 7 minutes, then GOOGL at 8 and PLTR and INTC at 9. At 09:50 the order is CRWD (78.6%), PLTR (76.5%), GOOGL (76.4%) and INTC (75.2%).</li>
+        <li>Low alone: CRWD (10:35), PLTR (10:51) and GOOGL (10:55) reach 60% first. At 09:50, CRWD's low is closest to the mark at 45.3%, still 15 points short.</li>
+        <li>High alone: TSLA (11:17) and PLTR (11:18) reach 60% first. No stock's high is near 60% at 09:50, and the best is PLTR at 39.1%.</li>
+        <li>Against chance, the order changes. CRWD and PLTR have the most volatile opens, so chance alone gives them high rates (69.4% and 67.9%). By the gap over chance at 09:50, GOOGL (+10.2 points) and INTC (+10.0) lead, while CRWD (+9.3) and PLTR (+8.6) sit in the middle.</li>
+      </ul>
+    </div>
+
+    <div class="result" id="r-years">
+      <h3>4. By year</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Low or high by 09:50</th><th>Stock avg</th><th>QQQ</th><th>SPY</th><th>Stocks above 60%</th><th>Stocks above chance</th></tr></thead>
+          <tbody>
+            <tr><th>2023</th><td class="num">70.6%</td><td class="num">50.8%</td><td class="num">41.1%</td><td class="num">8 of 8</td><td class="num">8 of 8</td></tr>
+            <tr><th>2024</th><td class="num">76.8%</td><td class="num">51.4%</td><td class="num">40.2%</td><td class="num">8 of 8</td><td class="num">8 of 8</td></tr>
+            <tr><th>2025</th><td class="num">72.9%</td><td class="num">56.7%</td><td class="num">47.0%</td><td class="num">8 of 8</td><td class="num">8 of 8</td></tr>
+            <tr><th>2026, to Sep</th><td class="num">78.4%</td><td class="num">58.3%</td><td class="num">53.5%</td><td class="num">8 of 8</td><td class="num">8 of 8</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Every stock cleared 60% and beat chance in every year. Both benchmarks crept up over the period, with SPY going from 41% to 54%, but neither reached 60%. Taken alone, every stock's low beat chance in every year, and its high did for five to eight of the stocks, depending on the year.</p>
     </div>
 
     <div class="result" id="r-trade">
       <h3>5. Does it pay?</h3>
-      <p>I tested the long side on NVDA: buy at the close of the 09:49 bar, place a stop just under the 09:30 to 09:50 low, and sell at 16:00.</p>
-      <dl class="facts">
-        <div><dt>Average day</dt><dd>+0.11%</dd></div>
-        <div><dt>Median day</dt><dd>−0.23%</dd></div>
-        <div><dt>Days with a gain</dt><dd>32%</dd></div>
-        <div><dt>t-statistic</dt><dd>2.3</dd></div>
-        <div><dt>Low held (39% of days)</dt><dd>+1.30% average</dd></div>
-        <div><dt>Stopped out (61%)</dt><dd>−0.64% average</dd></div>
-      </dl>
-      <p>The trade averaged +0.11% a day before costs, but it lost money on most days. Buying at 09:50 and holding to the close with no stop made +0.074% a day, so most of the profit is NVDA drifting up during the day, which any 09:50 purchase would have caught. The stop added about 0.04% a day, and I didn't test that part on its own.</p>
-      <p>The short version (sell at 09:50, stop above the morning high) made +0.04% a day, with t = 0.8, which is indistinguishable from zero.</p>
-      <details>
-        <summary>Show the trade on every symbol</summary>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Symbol</th><th>Long, avg per day</th><th>Short, avg per day</th></tr></thead>
-            <tbody>
-              <tr><th>CRWD</th><td class="num">+0.143%</td><td class="num">+0.005%</td></tr>
-              <tr><th>INTC</th><td class="num">+0.116%</td><td class="num">+0.008%</td></tr>
-              <tr class="ours"><th>NVDA</th><td class="num">+0.112%</td><td class="num">+0.036%</td></tr>
-              <tr><th>TSLA</th><td class="num">+0.101%</td><td class="num">+0.051%</td></tr>
-              <tr><th>AAPL</th><td class="num">+0.085%</td><td class="num">−0.063%</td></tr>
-              <tr><th>PLTR</th><td class="num">+0.055%</td><td class="num">+0.023%</td></tr>
-              <tr><th>QQQ</th><td class="num">+0.032%</td><td class="num">+0.015%</td></tr>
-              <tr><th>GOOGL</th><td class="num">+0.031%</td><td class="num">−0.022%</td></tr>
-              <tr><th>ORCL</th><td class="num">+0.029%</td><td class="num">+0.032%</td></tr>
-              <tr><th>SPY</th><td class="num">+0.010%</td><td class="num">+0.007%</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </details>
-      <p class="note">The split into "low held" and "stopped out" uses hindsight. At 09:50 you can't tell which kind of day it will be. The average, median, gain rate and t-statistic are what the trade actually earned.</p>
+      <p>I tested a long trade on each symbol: buy at the close of the 09:49 bar, place a stop just under the 09:30 to 09:50 low, and sell at 16:00. The short trade is the mirror image. "Hold" is the long trade without the stop.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Per day, before costs</th><th>Long</th><th>Long t</th><th>Hold</th><th>Short</th><th>Short t</th></tr></thead>
+          <tbody>
+            <tr><th>NVDA</th><td class="num">+0.112%</td><td class="num">2.34</td><td class="num">+0.074%</td><td class="num">+0.036%</td><td class="num">0.77</td></tr>
+            <tr><th>TSLA</th><td class="num">+0.101%</td><td class="num">1.78</td><td class="num">+0.041%</td><td class="num">+0.051%</td><td class="num">0.97</td></tr>
+            <tr><th>AAPL</th><td class="num">+0.085%</td><td class="num">2.97</td><td class="num">+0.082%</td><td class="num">−0.063%</td><td class="num">−2.70</td></tr>
+            <tr><th>GOOGL</th><td class="num">+0.031%</td><td class="num">1.08</td><td class="num">+0.054%</td><td class="num">−0.022%</td><td class="num">−0.76</td></tr>
+            <tr><th>CRWD</th><td class="num">+0.143%</td><td class="num">2.89</td><td class="num">+0.128%</td><td class="num">+0.005%</td><td class="num">0.10</td></tr>
+            <tr><th>ORCL</th><td class="num">+0.029%</td><td class="num">0.74</td><td class="num">+0.026%</td><td class="num">+0.032%</td><td class="num">0.86</td></tr>
+            <tr><th>INTC</th><td class="num">+0.116%</td><td class="num">2.09</td><td class="num">+0.070%</td><td class="num">+0.008%</td><td class="num">0.16</td></tr>
+            <tr><th>PLTR</th><td class="num">+0.055%</td><td class="num">0.87</td><td class="num">+0.114%</td><td class="num">+0.023%</td><td class="num">0.39</td></tr>
+            <tr class="ours"><th>All eight, equal weight</th><td class="num">+0.084%</td><td class="num">2.96</td><td class="num">+0.074%</td><td class="num">+0.009%</td><td class="num">0.33</td></tr>
+            <tr><th>QQQ</th><td class="num">+0.032%</td><td class="num">1.55</td><td class="num">+0.036%</td><td class="num">+0.015%</td><td class="num">0.84</td></tr>
+            <tr><th>SPY</th><td class="num">+0.010%</td><td class="num">0.82</td><td class="num">+0.024%</td><td class="num">+0.007%</td><td class="num">0.53</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Holding all eight stocks at equal weight, the long trade made +0.084% a day before costs (t = 3.0), against +0.032% for QQQ and +0.010% for SPY. But holding the same stocks from 09:50 to the close with no stop made +0.074% a day, so almost all of the gain is the stocks drifting up during the day. The stop rule added about 0.01% a day. The short trade made nothing: +0.009% a day for the eight stocks (t = 0.3).</p>
     </div>
   </section>
 
@@ -395,12 +408,13 @@
     </div>
     <p class="verdict-line"><span class="m p"></span>Passes as worded, but it doesn't give a usable prediction.</p>
     <ul class="plain">
-      <li>Every stock tested set its low or high by 09:50 on 71% to 79% of days, clearing the 60% benchmark. The index funds didn't.</li>
-      <li>Random prices with the same volatility clear 60% too, so the benchmark proves little. The stocks beat chance by 5 to 10 points, which is a real effect, but a modest one.</li>
-      <li>At 09:50 you don't know which extreme is in. The low or the high alone is in on 35% to 45% of days, and neither reaches 60% until after 10:30.</li>
-      <li>The long trade on NVDA earned +0.11% a day before costs, mostly from NVDA rising during the day.</li>
+      <li>Every stock's low or high is in on 60% of days within the first 7 to 11 minutes, and by 09:50 on 71% to 79%, in every year. QQQ needs 26 minutes and SPY 40.</li>
+      <li>Chance gets every stock to 60% only 5 to 7 minutes later, so the 60% reading proves little. What holds up is the gap over chance: about 9 points at 09:50 for the average stock, two to four times the benchmarks' gap. Early extremes are mostly a single-stock effect.</li>
+      <li>CRWD, PLTR and GOOGL are the strongest, with INTC close behind. Against chance, GOOGL and INTC lead.</li>
+      <li>When the 60% reading comes, you don't know which extreme is in. The low alone takes until 10:35 to 11:33 to reach 60%, and the high until 11:17 to 11:55.</li>
+      <li>The long trade's small profit came almost entirely from the stocks rising during the day.</li>
     </ul>
-    <p>The first 20 minutes tell you that one of the day's extremes is probably in, but not which one. Without that, there's no trade to place.</p>
+    <p>The first few minutes tell you that one of the day's extremes is probably in, but not which one. Without that, there's no trade to place.</p>
   </section>
 
   <section id="limitations">
@@ -410,9 +424,11 @@
     <ul class="plain">
       <li>The 60% benchmark is arbitrary, so the pass or fail verdict is too. The gap over chance doesn't depend on it.</li>
       <li>No trading costs. Spreads, fees and slippage are ignored, and every stop fills exactly at its price. Treat the trade results as a best case.</li>
+      <li>X is found from the data rather than fixed in advance, so the times to 60% may look slightly better than they would on new data.</li>
       <li>In-sample only. Every number comes from the same 931 days, and nothing has been checked on data after Oct 1, 2026.</li>
-      <li>Many comparisons. Ten symbols, three measures (low, high, either) and 390 windows add up to a lot of tests, and the follow-up results carry that risk.</li>
-      <li>Hand-picked symbols. All ten are large, heavily traded and mostly tech. Smaller or quieter stocks may behave differently.</li>
+      <li>Many comparisons. Ten symbols, three measures (low, high, either) and two trades add up to a lot of tests, so expect a few results to look stronger than they are.</li>
+      <li>Hand-picked stocks. All eight are large, heavily traded and mostly tech. Smaller or quieter stocks may behave differently.</li>
+      <li>The stocks move together. They share the same days and the same market, so the eight results aren't eight independent tests.</li>
       <li>A rising market. SPY nearly doubled over the period, which flatters any trade that buys.</li>
       <li>The chance model's volatility pattern is fit to the same days it's tested on. It sets the size of moves, not their direction, so it can't create an edge. It can absorb effects that come purely from when volatility happens.</li>
       <li>Nothing known at the open is used. The overnight gap, news and earnings days could all change where the extremes land.</li>
@@ -421,7 +437,8 @@
     <h3>Next tests</h3>
     <ul class="plain">
       <li>Split days by the opening gap, to see whether it tells you which extreme is in. Gap-down days may set the low early, and gap-up days the high.</li>
-      <li>Re-run on data after Oct 1, 2026, with the 20-minute window fixed in advance.</li>
+      <li>Repeat on a larger, randomly chosen set of stocks, including smaller ones.</li>
+      <li>Re-run on data after Oct 1, 2026, with X fixed at the times found here.</li>
       <li>Add the bid-ask spread and stop slippage to the trade.</li>
     </ul>
   </section>
@@ -430,7 +447,7 @@
     <div class="section-head">
       <h2>Reproduce</h2>
     </div>
-    <p>Every number here comes from <code>notebooks/open_extremes.ipynb</code> in the <a href="https://github.com/xcollantes/open-extremes">open-extremes repo</a>. The repo includes the 1-minute bars for all ten symbols in <code>notebooks/data/</code>, so a rerun doesn't need API keys.</p>
+    <p>Every number here comes from <code>notebooks/open_extremes.ipynb</code> in the <a href="https://github.com/xcollantes/open-extremes">open-extremes repo</a>. Section 5 of the notebook covers the eight stocks and the benchmarks. The repo includes the 1-minute bars for all ten symbols in <code>notebooks/data/</code>, so a rerun doesn't need API keys.</p>
     <pre><code>git clone https://github.com/xcollantes/open-extremes
 cd open-extremes &amp;&amp; uv sync
 cd notebooks
@@ -445,10 +462,10 @@ uv run jupyter nbconvert --to notebook --execute --inplace open_extremes.ipynb</
 </main>
 
 <script>
-  // NVDA: share of days with the extreme set in the first x minutes, in %,
-  // and the vol-matched chance rate. From the notebook's hit-rate curves,
+  // Share of days with the extreme set in the first x minutes, in %, for
+  // each symbol and the stock average. From the notebook's section 5 curves,
   // sampled every 5 minutes.
-  const D = {"x":[1,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240,245,250,255,260,265,270,275,280,285,290,295,300,305,310,315,320,325,330,335,340,345,350,355,360,365,370,375,380,385,390],"either":[26.5,47.7,59.7,66.5,72.5,77.2,79.1,82.5,84.5,86.1,87.5,88.8,89.8,91.0,91.4,92.3,92.8,93.1,93.7,94.1,94.6,95.3,95.5,95.8,95.8,96.1,96.3,96.6,96.9,96.9,97.2,97.4,97.9,98.1,98.1,98.1,98.2,98.3,98.4,98.4,98.5,98.6,98.6,98.7,98.9,99.0,99.0,99.0,99.0,99.0,99.1,99.2,99.2,99.2,99.2,99.4,99.4,99.6,99.7,99.7,99.7,99.8,99.8,99.8,99.8,99.8,99.8,99.8,99.8,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0],"either_vm":[24.8,40.5,50.6,57.5,63.1,67.4,71.2,74.6,77.3,79.5,81.4,83.2,84.7,86.1,87.4,88.6,89.6,90.6,91.4,92.2,92.9,93.5,94.0,94.5,94.8,95.2,95.7,96.0,96.4,96.7,96.9,97.1,97.4,97.6,97.8,98.0,98.1,98.3,98.5,98.6,98.7,98.8,98.9,99.1,99.1,99.2,99.3,99.4,99.5,99.5,99.6,99.7,99.7,99.7,99.8,99.8,99.9,99.9,99.9,99.9,99.9,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0],"low":[13.4,25.2,31.1,34.9,38.7,41.5,42.5,45.1,46.9,48.4,50.4,52.1,53.5,55.0,56.2,57.4,58.1,59.0,59.9,61.7,62.8,63.4,64.2,64.6,64.9,65.6,66.2,66.6,67.2,67.9,68.5,69.1,69.8,70.1,71.0,71.3,71.8,72.1,72.6,72.9,73.3,73.9,74.2,74.8,75.0,75.2,75.8,76.7,77.2,77.4,78.0,78.3,78.7,78.8,79.1,79.8,80.0,80.3,80.9,81.8,82.3,82.8,83.1,83.7,84.2,84.7,84.9,85.5,86.3,86.7,87.5,87.9,88.5,89.7,90.4,91.0,92.4,94.5,100.0],"low_vm":[12.0,19.9,25.0,28.6,31.5,34.1,36.2,38.3,40.0,41.5,42.8,44.0,45.3,46.5,47.6,48.7,49.6,50.6,51.5,52.4,53.3,54.0,54.7,55.6,56.3,56.9,57.6,58.2,58.8,59.3,60.0,60.5,61.0,61.6,62.1,62.6,63.1,63.6,64.2,64.6,65.1,65.6,66.1,66.6,67.1,67.6,68.2,68.8,69.3,69.8,70.4,70.9,71.4,71.9,72.4,73.0,73.8,74.3,74.9,75.4,76.0,76.6,77.2,77.8,78.4,79.0,79.7,80.5,81.3,82.1,83.0,83.9,84.8,85.9,87.0,88.3,90.0,93.2,100.0],"high":[13.1,22.4,28.9,32.5,35.9,38.7,40.3,42.4,43.6,44.4,45.8,46.2,47.6,48.7,49.3,50.2,51.0,51.7,52.5,53.2,53.8,55.3,56.1,56.8,57.1,57.8,58.2,58.5,59.5,60.0,60.7,61.0,62.1,62.7,63.5,63.6,64.3,64.7,65.0,65.4,65.7,66.2,66.7,67.0,67.7,68.4,68.7,69.2,69.8,70.1,70.5,71.0,71.2,71.8,72.1,72.9,73.5,74.2,75.4,75.8,76.3,76.6,77.3,77.8,78.1,78.8,79.6,80.5,81.6,83.1,83.7,84.4,85.1,85.5,86.5,86.9,88.1,90.9,100.0],"high_vm":[12.8,20.6,25.8,29.2,32.2,34.5,36.6,38.7,40.4,41.9,43.3,44.6,45.9,46.9,48.0,49.2,50.2,51.1,51.9,52.8,53.6,54.3,54.9,55.6,56.4,57.0,57.6,58.4,59.0,59.5,60.0,60.4,61.1,61.7,62.2,62.8,63.3,63.9,64.3,64.9,65.5,66.0,66.5,67.1,67.7,68.3,68.8,69.4,69.9,70.5,71.0,71.5,72.0,72.5,73.1,73.7,74.3,74.8,75.3,75.9,76.5,77.2,77.8,78.4,78.9,79.5,80.2,81.0,81.7,82.6,83.3,84.1,85.0,85.9,87.1,88.4,90.1,93.5,100.0]};
+  const D = {"x":[1,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240,245,250,255,260,265,270,275,280,285,290,295,300,305,310,315,320,325,330,335,340,345,350,355,360,365,370,375,380,385,390],"SPY":{"either":[14.1,23.6,30.0,36.7,44.9,49.3,51.9,56.7,60.3,62.9,65.8,68.5,69.8,71.9,72.9,74.4,76.2,76.9,78.5,80.5,81.7,83.1,84.3,85.0,85.5,86.8,87.8,88.5,88.9,89.5,89.7,90.2,91.0,91.2,91.5,91.9,92.1,92.8,93.2,93.4,94.0,94.3,94.6,95.0,95.1,95.3,95.4,95.9,95.9,96.6,96.8,97.2,97.3,97.4,97.7,98.1,98.4,98.4,98.4,98.7,98.8,99.0,99.2,99.5,99.6,99.7,99.8,99.8,99.8,99.8,99.8,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0],"low":[7.8,12.7,16.3,20.1,24.1,26.7,28.5,30.3,32.4,34.3,35.8,37.3,38.3,40.1,40.8,41.8,42.7,43.8,45.3,46.2,47.2,48.4,49.3,49.7,50.3,51.6,52.4,53.3,53.8,54.2,54.8,55.7,56.6,57.3,57.8,58.3,59.0,59.7,60.6,61.2,62.0,62.6,62.9,64.2,64.4,65.0,65.7,66.9,67.1,68.0,69.0,69.5,70.4,71.3,72.3,72.6,74.0,74.2,75.1,75.8,76.4,77.7,77.9,78.8,79.5,79.9,80.5,80.9,81.5,82.3,83.4,84.3,85.4,86.1,87.2,88.8,90.2,92.5,100.0],"high":[6.2,11.0,13.6,16.6,20.8,22.6,23.5,26.7,28.5,29.3,31.0,32.4,33.1,34.3,34.8,35.8,36.8,37.3,37.5,39.2,40.3,41.0,42.0,42.7,43.2,44.4,44.9,45.6,46.0,46.7,46.9,47.3,48.1,48.7,49.3,49.9,50.5,51.1,51.3,51.6,52.3,53.1,54.1,54.8,55.2,56.3,56.5,57.5,57.9,58.6,59.1,59.7,60.4,61.3,61.8,63.3,63.6,64.1,64.4,65.2,66.2,66.7,68.2,69.3,70.2,71.1,72.0,73.3,74.5,75.5,76.6,77.9,79.2,80.2,81.5,82.5,83.5,88.6,100.0]},"QQQ":{"either":[17.4,30.7,40.1,47.0,54.0,59.2,62.3,67.0,69.2,71.9,75.0,77.7,79.4,80.8,81.8,82.9,84.2,85.0,85.7,87.1,87.8,88.6,89.3,90.2,90.9,91.8,92.5,92.9,93.6,94.0,94.1,94.5,95.0,95.3,95.5,95.6,95.8,96.0,96.2,96.2,96.5,96.9,97.0,97.2,97.3,97.3,97.6,97.7,97.7,98.2,98.4,98.5,98.5,98.5,98.5,98.6,98.6,98.6,98.7,98.8,98.8,99.0,99.2,99.4,99.7,99.8,99.8,99.9,99.9,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0],"low":[8.5,16.1,20.9,24.6,28.2,32.0,33.6,36.5,37.7,40.3,42.5,44.0,45.2,46.8,48.0,49.1,50.2,50.8,51.8,53.0,53.7,55.1,55.6,56.1,56.5,58.3,59.0,59.7,60.7,61.2,61.4,62.4,63.2,63.6,63.8,64.2,64.9,65.4,65.8,66.4,67.0,67.6,68.1,69.1,69.2,69.5,70.1,70.8,71.2,71.8,72.8,73.1,73.8,74.3,75.1,75.4,76.2,76.8,77.8,78.3,78.5,79.4,79.7,80.2,80.6,81.4,81.7,82.4,83.1,83.8,84.7,85.5,86.4,86.9,88.4,89.4,91.4,93.7,100.0],"high":[8.9,14.6,19.1,22.4,25.8,27.5,29.2,31.7,33.0,33.8,35.2,36.6,37.5,38.1,39.2,39.7,40.9,41.9,42.3,43.6,44.3,45.0,45.8,46.9,47.8,48.7,49.2,49.9,50.5,51.3,52.0,52.4,53.0,53.8,54.7,55.0,56.0,56.6,56.6,56.8,57.4,58.2,58.5,59.0,59.5,60.4,60.8,61.5,62.0,62.8,63.3,63.5,64.0,65.2,66.1,67.0,67.3,68.0,68.9,69.3,69.8,70.7,71.5,72.7,73.6,74.5,75.6,77.0,78.1,79.4,80.8,81.8,82.7,83.9,84.7,85.7,86.6,90.5,100.0]},"NVDA":{"either":[26.5,47.7,59.7,66.5,72.5,77.2,79.1,82.5,84.5,86.1,87.5,88.8,89.8,91.0,91.4,92.3,92.8,93.1,93.7,94.1,94.6,95.3,95.5,95.8,95.8,96.1,96.3,96.6,96.9,96.9,97.2,97.4,97.9,98.1,98.1,98.1,98.2,98.3,98.4,98.4,98.5,98.6,98.6,98.7,98.9,99.0,99.0,99.0,99.0,99.0,99.1,99.2,99.2,99.2,99.2,99.4,99.4,99.6,99.7,99.7,99.7,99.8,99.8,99.8,99.8,99.8,99.8,99.8,99.8,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0],"low":[13.4,25.2,31.1,34.9,38.7,41.5,42.5,45.1,46.9,48.4,50.4,52.1,53.5,55.0,56.2,57.4,58.1,59.0,59.9,61.7,62.8,63.4,64.2,64.6,64.9,65.6,66.2,66.6,67.2,67.9,68.5,69.1,69.8,70.1,71.0,71.3,71.8,72.1,72.6,72.9,73.3,73.9,74.2,74.8,75.0,75.2,75.8,76.7,77.2,77.4,78.0,78.3,78.7,78.8,79.1,79.8,80.0,80.3,80.9,81.8,82.3,82.8,83.1,83.7,84.2,84.7,84.9,85.5,86.3,86.7,87.5,87.9,88.5,89.7,90.4,91.0,92.4,94.5,100.0],"high":[13.1,22.4,28.9,32.5,35.9,38.7,40.3,42.4,43.6,44.4,45.8,46.2,47.6,48.7,49.3,50.2,51.0,51.7,52.5,53.2,53.8,55.3,56.1,56.8,57.1,57.8,58.2,58.5,59.5,60.0,60.7,61.0,62.1,62.7,63.5,63.6,64.3,64.7,65.0,65.4,65.7,66.2,66.7,67.0,67.7,68.4,68.7,69.2,69.8,70.1,70.5,71.0,71.2,71.8,72.1,72.9,73.5,74.2,75.4,75.8,76.3,76.6,77.3,77.8,78.1,78.8,79.6,80.5,81.6,83.1,83.7,84.4,85.1,85.5,86.5,86.9,88.1,90.9,100.0]},"TSLA":{"either":[27.5,49.8,61.7,67.0,72.1,76.3,79.4,82.2,84.6,85.8,87.6,88.5,90.1,91.3,92.3,92.9,94.0,94.7,95.2,95.4,95.7,96.0,96.5,96.8,96.9,97.3,97.5,97.7,98.0,98.1,98.2,98.5,98.6,98.8,98.8,98.8,98.9,98.9,98.9,99.1,99.1,99.1,99.2,99.2,99.2,99.2,99.2,99.6,99.7,99.8,99.8,99.8,99.8,99.9,99.9,99.9,99.9,99.9,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0],"low":[13.6,24.0,30.3,33.3,36.5,39.0,41.5,43.0,44.3,46.1,47.9,48.8,50.7,52.1,53.7,55.1,55.9,57.3,58.0,59.0,59.7,60.4,60.9,61.3,61.9,62.9,63.4,64.2,64.7,65.1,65.7,66.3,66.4,66.9,67.6,68.0,68.9,69.6,70.0,70.9,71.2,72.2,72.6,73.3,73.9,74.3,74.7,75.3,75.9,76.2,76.6,77.0,77.1,77.6,78.2,78.6,79.8,80.0,80.5,81.2,81.6,82.6,83.2,84.0,84.2,85.2,85.7,86.7,87.0,87.5,87.9,88.7,89.6,90.4,91.6,92.7,93.6,95.4,100.0],"high":[13.9,25.9,31.9,34.9,37.4,39.5,41.4,44.3,46.8,47.9,49.5,50.2,51.0,52.3,53.0,53.8,55.4,56.7,57.4,58.2,59.0,59.7,60.9,61.0,61.9,62.8,63.5,64.0,65.0,65.7,66.4,67.1,67.5,67.8,68.3,69.1,69.2,69.8,70.1,70.8,71.0,71.6,72.0,73.0,73.5,74.1,74.4,75.0,75.4,75.7,75.9,76.0,76.3,76.6,77.0,77.8,78.4,78.7,79.2,80.0,80.5,81.0,81.3,82.0,82.6,83.1,83.7,84.4,85.0,85.8,86.7,87.5,88.0,88.7,89.4,90.7,91.8,94.0,100.0]},"AAPL":{"either":[33.0,51.2,61.0,66.9,72.7,76.7,78.6,82.1,84.7,86.6,87.3,88.6,89.6,90.3,91.2,91.6,91.9,92.6,93.0,93.4,93.7,94.0,94.6,95.2,95.6,95.8,95.9,96.3,96.5,96.8,96.9,97.1,97.2,97.3,97.4,97.4,97.4,97.5,97.7,97.7,97.9,98.0,98.1,98.1,98.2,98.5,98.6,98.6,98.6,98.7,98.7,98.7,98.8,98.8,98.9,98.9,99.0,99.1,99.2,99.2,99.2,99.4,99.4,99.5,99.6,99.6,99.6,99.8,99.8,99.8,99.8,99.8,99.8,99.8,99.8,99.9,99.9,100.0,100.0],"low":[18.9,26.9,32.5,36.2,40.6,43.3,44.5,47.4,49.6,50.8,51.5,52.3,52.8,53.8,54.7,55.4,56.0,56.9,57.6,58.4,58.6,59.1,59.5,59.9,60.5,61.4,62.0,62.8,63.2,63.5,63.8,64.6,64.9,65.2,65.6,66.5,67.1,68.0,68.9,69.4,70.1,70.7,70.9,71.3,71.9,72.2,73.0,74.1,74.5,75.0,75.4,75.7,76.2,76.8,77.3,77.8,78.4,78.7,79.3,79.9,80.7,81.5,82.0,82.5,83.0,83.1,83.5,84.2,84.7,85.5,85.9,86.5,87.5,88.2,88.8,89.8,91.0,93.9,100.0],"high":[14.1,24.4,29.9,32.7,35.1,37.6,39.1,40.8,43.0,44.6,45.3,46.9,48.2,49.3,50.4,50.7,51.7,52.1,52.5,53.8,54.4,55.5,56.5,57.4,57.9,58.4,59.1,59.8,60.5,61.2,62.2,62.6,63.1,63.5,64.1,64.9,65.2,65.3,65.6,66.1,66.3,67.2,67.8,68.3,68.6,69.5,70.0,70.6,70.8,71.5,72.0,72.5,72.9,73.4,73.8,74.7,75.5,76.3,76.4,76.9,77.1,77.4,78.1,78.5,78.6,79.1,79.8,80.8,81.3,81.7,82.3,82.8,83.5,84.1,85.1,86.0,87.5,91.8,100.0]},"GOOGL":{"either":[35.6,54.4,66.2,71.6,76.4,79.9,82.2,84.5,87.2,88.3,89.8,90.9,91.4,91.8,92.5,93.2,93.8,94.3,94.7,95.4,95.5,95.8,96.1,96.3,96.5,96.8,96.8,97.1,97.3,97.6,97.6,97.7,98.1,98.2,98.2,98.3,98.3,98.4,98.4,98.4,98.6,98.7,98.7,98.7,98.9,98.9,98.9,99.0,99.0,99.1,99.1,99.1,99.4,99.6,99.6,99.6,99.7,99.7,99.7,99.7,99.7,99.8,99.8,99.8,99.8,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0],"low":[20.0,28.8,35.1,38.2,41.4,44.1,45.5,47.7,49.8,51.3,53.1,53.9,55.1,56.2,57.3,58.1,59.0,60.0,60.8,62.0,62.1,62.7,64.1,64.6,65.2,66.3,67.0,67.5,67.8,68.1,68.5,69.1,70.1,70.9,71.0,71.5,72.4,73.1,73.8,74.2,75.0,75.2,75.6,76.2,76.3,76.5,76.7,76.8,77.1,77.6,77.8,78.3,79.2,79.6,80.2,80.5,80.7,81.4,82.0,82.3,82.6,83.4,83.9,84.0,84.4,84.7,85.0,85.5,85.9,86.6,87.0,87.4,88.2,89.2,90.2,90.7,91.3,94.1,100.0],"high":[15.6,25.8,32.1,35.3,38.1,40.6,42.4,44.1,46.2,47.3,48.7,50.3,51.0,51.8,52.4,54.0,54.8,55.3,55.4,56.3,57.0,57.6,58.1,59.1,59.6,59.9,60.5,60.9,61.2,61.9,62.4,62.7,63.7,64.2,64.7,65.2,65.7,66.6,67.1,67.8,68.2,68.4,68.9,69.3,69.9,70.4,70.9,71.8,72.5,73.1,73.7,74.1,74.4,74.8,75.2,75.9,76.3,76.9,77.6,78.4,78.8,79.4,79.7,80.0,80.7,81.3,81.8,82.1,82.3,82.8,83.5,84.0,84.3,85.6,86.0,87.1,88.5,92.2,100.0]},"CRWD":{"either":[31.4,55.3,66.6,73.8,78.6,81.7,84.1,87.4,88.9,90.1,91.3,92.3,93.4,94.1,94.8,95.2,95.9,96.0,96.6,97.1,97.3,97.5,97.7,97.9,98.1,98.3,98.5,98.6,98.7,98.7,98.9,98.9,99.0,99.2,99.4,99.4,99.4,99.5,99.6,99.6,99.6,99.6,99.6,99.6,99.6,99.6,99.6,99.6,99.7,99.7,99.7,99.7,99.7,99.7,99.7,99.7,99.7,99.8,99.8,99.8,99.9,99.9,99.9,99.9,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0],"low":[17.3,31.8,38.7,42.7,45.3,47.7,49.1,51.9,53.2,55.1,56.5,57.8,59.2,60.2,61.0,62.0,62.9,63.7,64.7,65.5,66.4,66.8,67.6,67.9,68.4,69.5,70.1,70.7,71.1,71.6,72.0,72.6,73.1,74.0,75.0,75.6,75.8,76.6,77.3,78.1,78.6,79.3,79.3,79.6,80.0,80.3,80.6,80.7,80.9,81.1,81.5,82.0,82.4,82.9,83.4,84.0,84.3,84.7,85.3,85.8,86.4,86.9,87.0,87.6,88.2,88.3,88.9,89.5,89.8,90.2,90.8,91.2,92.1,92.5,93.0,93.8,94.6,95.9,100.0],"high":[14.1,24.4,29.8,33.7,36.5,38.5,40.5,43.4,44.9,46.6,48.0,49.0,49.9,51.2,52.6,53.7,54.7,55.2,55.7,56.7,57.6,58.1,59.2,59.4,59.9,60.4,60.9,61.4,61.8,62.6,63.2,63.5,63.7,64.3,65.0,65.5,66.0,66.9,67.3,67.5,68.1,68.4,69.1,70.0,70.2,70.5,70.6,70.8,71.2,72.1,72.6,73.5,73.7,74.3,74.7,75.6,76.0,76.7,77.0,77.3,77.8,78.2,78.9,79.5,79.9,81.0,81.5,82.4,83.1,85.0,85.7,86.3,88.0,88.5,89.7,90.7,91.4,93.8,100.0]},"ORCL":{"either":[25.0,51.3,60.4,67.1,71.4,75.5,78.1,81.5,83.7,85.9,87.5,88.8,90.3,90.8,91.3,92.3,93.0,93.6,93.8,94.3,94.6,95.0,95.4,95.6,96.0,96.6,96.7,97.0,97.1,97.2,97.4,97.4,97.4,97.5,97.6,97.6,97.9,98.1,98.2,98.5,98.7,98.7,98.9,99.0,99.0,99.1,99.4,99.4,99.4,99.5,99.5,99.5,99.6,99.6,99.7,99.7,99.7,99.7,99.7,99.7,99.7,99.7,99.7,99.9,99.9,99.9,99.9,99.9,99.9,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0],"low":[10.1,24.1,29.1,33.3,36.2,39.3,41.2,43.5,45.5,46.8,48.2,50.1,51.0,51.8,52.5,53.8,54.8,55.6,56.1,56.7,57.6,58.3,58.8,59.2,59.8,60.8,61.0,62.1,62.6,63.2,63.4,63.9,64.4,65.0,65.7,66.3,66.8,67.3,68.0,68.6,69.5,69.8,70.4,70.8,71.0,71.2,71.8,72.3,72.7,73.1,73.4,73.7,74.3,74.8,75.8,76.6,76.9,77.3,78.2,78.7,79.6,79.7,80.1,80.3,81.4,82.0,82.7,83.1,83.9,84.5,85.4,85.8,87.0,88.1,89.0,90.1,91.7,93.8,100.0],"high":[14.9,27.5,32.5,35.7,38.1,40.1,41.9,44.3,45.9,47.7,48.8,49.5,50.7,51.5,52.3,53.0,53.9,54.8,55.3,56.0,56.5,57.3,58.1,58.6,59.5,60.4,60.8,61.2,61.9,62.2,62.8,63.3,63.6,63.7,64.2,64.7,65.6,66.3,66.6,67.8,68.4,68.6,69.1,69.4,69.9,70.0,70.5,71.0,71.8,72.2,72.6,72.7,72.8,73.5,74.4,74.9,75.5,76.0,76.7,77.2,77.3,77.8,78.3,78.7,79.7,80.3,81.0,82.0,82.2,83.1,83.8,84.4,85.1,85.5,86.3,87.3,89.0,92.5,100.0]},"INTC":{"either":[35.8,53.2,62.7,69.4,75.2,78.6,81.1,82.8,85.1,87.1,88.3,89.5,90.7,91.4,91.8,92.1,92.6,93.2,93.8,94.0,94.2,94.6,95.1,95.2,95.3,95.4,95.5,95.9,96.0,96.5,97.0,97.1,97.3,97.4,97.5,97.6,97.9,98.0,98.0,98.0,98.2,98.2,98.4,98.5,98.6,98.8,98.9,98.9,99.0,99.0,99.1,99.1,99.1,99.1,99.1,99.2,99.6,99.6,99.8,99.8,99.8,99.8,99.8,99.8,99.9,99.9,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0],"low":[17.7,26.1,31.1,35.8,38.9,41.4,43.7,45.2,47.6,49.3,50.2,51.2,53.4,54.4,55.2,55.9,57.1,58.0,59.1,59.8,60.4,61.1,61.9,62.1,62.4,62.6,63.2,63.9,64.3,65.1,66.0,66.6,66.8,67.3,67.7,68.3,69.2,69.9,70.4,70.6,71.1,71.4,71.5,72.0,72.4,73.0,73.8,74.4,74.9,75.0,75.1,75.4,75.8,76.0,76.5,77.0,77.6,78.0,78.6,78.8,79.1,79.6,79.8,80.6,80.8,81.2,82.2,82.6,83.6,84.3,85.2,86.5,87.5,88.2,89.5,90.4,91.7,93.6,100.0],"high":[18.2,27.4,32.5,35.3,38.8,40.5,41.7,43.1,44.7,47.2,48.8,50.1,50.9,52.4,53.4,55.0,55.9,56.4,56.9,57.7,58.5,59.2,59.7,60.4,60.8,61.2,62.0,62.5,63.2,63.8,65.0,65.4,65.7,66.4,66.5,66.5,66.9,67.2,67.7,67.9,68.6,69.3,69.8,70.7,71.2,72.1,72.7,73.3,73.6,74.0,74.7,75.4,75.8,76.8,77.4,78.1,78.8,79.4,79.8,80.2,80.6,81.0,81.5,82.3,82.9,83.9,84.2,84.9,85.7,86.6,87.2,88.0,88.6,89.5,89.9,90.4,91.7,93.9,100.0]},"PLTR":{"either":[29.2,52.7,63.1,70.4,76.5,79.6,81.7,84.6,86.5,87.6,89.3,90.2,91.5,92.4,93.2,93.7,94.7,95.4,95.7,96.3,96.7,96.9,97.1,97.2,97.2,97.4,97.6,98.0,98.1,98.2,98.3,98.4,98.4,98.7,98.9,98.9,98.9,98.9,98.9,98.9,98.9,98.9,99.0,99.1,99.1,99.1,99.1,99.2,99.4,99.4,99.5,99.5,99.6,99.7,99.8,99.8,99.8,99.8,99.8,99.8,99.8,99.8,99.8,99.8,99.9,99.9,99.9,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0],"low":[16.2,28.4,33.5,37.9,41.1,43.9,46.2,48.4,50.1,52.0,53.1,54.1,55.6,57.3,58.0,58.8,59.7,61.2,62.2,63.7,64.2,65.5,66.4,66.7,67.5,68.6,69.3,69.9,70.5,71.1,71.8,72.4,72.8,73.6,74.1,74.3,75.2,75.6,75.9,76.5,77.3,77.6,77.8,78.5,79.1,79.3,79.9,81.0,81.2,81.2,82.1,82.5,82.7,83.1,83.7,84.2,84.4,84.6,85.2,85.6,86.0,86.5,86.6,86.9,87.2,87.3,87.6,88.6,89.3,89.9,90.7,90.9,91.7,92.7,93.8,94.2,95.5,96.8,100.0],"high":[13.1,24.8,30.8,34.8,39.1,41.1,42.5,44.6,45.8,46.7,48.5,49.6,51.1,52.3,53.6,54.4,56.2,57.1,57.6,58.9,59.3,59.5,60.6,61.0,62.0,62.5,62.8,63.6,64.1,64.6,65.6,66.0,66.7,67.0,67.6,68.4,69.2,70.0,70.9,71.1,71.3,71.6,71.9,72.3,72.6,73.0,73.9,74.3,74.7,75.1,75.3,75.7,76.0,76.2,76.8,77.7,78.0,78.5,79.2,79.3,79.8,80.1,81.2,82.2,83.0,83.6,83.9,85.2,86.0,87.0,87.9,88.7,89.3,90.0,91.0,91.3,92.4,94.8,100.0]},"avg":{"either":[30.5,52.0,62.7,69.1,74.4,78.2,80.5,83.5,85.7,87.2,88.6,89.7,90.9,91.6,92.3,92.9,93.6,94.1,94.5,95.0,95.3,95.6,96.0,96.2,96.4,96.7,96.9,97.2,97.3,97.5,97.7,97.8,98.0,98.2,98.2,98.3,98.3,98.4,98.5,98.6,98.7,98.7,98.8,98.9,99.0,99.0,99.1,99.2,99.2,99.3,99.3,99.3,99.4,99.4,99.5,99.5,99.6,99.6,99.7,99.7,99.7,99.8,99.8,99.8,99.9,99.9,99.9,99.9,99.9,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0,100.0],"low":[15.9,26.9,32.7,36.5,39.8,42.5,44.3,46.5,48.4,50.0,51.3,52.5,53.9,55.1,56.1,57.0,57.9,59.0,59.8,60.8,61.5,62.2,62.9,63.3,63.8,64.7,65.3,66.0,66.4,66.9,67.5,68.1,68.6,69.1,69.7,70.2,70.9,71.5,72.1,72.7,73.3,73.8,74.0,74.5,74.9,75.3,75.8,76.4,76.8,77.1,77.5,77.9,78.3,78.7,79.3,79.8,80.3,80.7,81.2,81.8,82.3,82.9,83.2,83.7,84.2,84.6,85.1,85.7,86.3,86.9,87.5,88.1,89.0,89.9,90.8,91.6,92.7,94.7,100.0],"high":[14.6,25.3,31.1,34.4,37.4,39.6,41.2,43.4,45.1,46.5,47.9,49.0,50.1,51.2,52.1,53.1,54.2,54.9,55.4,56.3,57.0,57.8,58.6,59.2,59.8,60.4,61.0,61.5,62.1,62.8,63.5,64.0,64.5,65.0,65.5,66.0,66.5,67.1,67.5,68.0,68.5,68.9,69.4,70.0,70.5,71.0,71.5,72.0,72.5,73.0,73.4,73.9,74.2,74.7,75.2,75.9,76.5,77.1,77.6,78.2,78.5,78.9,79.6,80.1,80.7,81.4,81.9,82.8,83.4,84.4,85.1,85.8,86.5,87.2,88.0,88.8,90.1,93.0,100.0]},"stocks":["NVDA","TSLA","AAPL","GOOGL","CRWD","ORCL","INTC","PLTR"]};
 
   const clock = (m) => {
     const t = 570 + m;
@@ -462,7 +479,7 @@ uv run jupyter nbconvert --to notebook --execute --inplace open_extremes.ipynb</
     const iw = W - m.l - m.r, ih = H - m.t - m.b;
     const xs = (v) => m.l + (v / 390) * iw;
     const ys = (v) => m.t + (1 - v / 100) * ih;
-    const path = (key) => "M" + D.x.map((x, i) => `${xs(x).toFixed(1)},${ys(D[key][i]).toFixed(1)}`).join("L");
+    const path = (sym, cls) => `<path class="${cls}" d="M` + D.x.map((x, i) => `${xs(x).toFixed(1)},${ys(D[sym][k][i]).toFixed(1)}`).join("L") + `"/>`;
 
     let s = `<svg width="${W}" height="${H}" aria-hidden="true">`;
     for (let v = 0; v <= 100; v += 20) {
@@ -473,27 +490,26 @@ uv run jupyter nbconvert --to notebook --execute --inplace open_extremes.ipynb</
       s += `<text x="${xs(t)}" y="${H - 6}" text-anchor="${t === 390 ? "end" : "middle"}">${clock(t)}</text>`;
     }
     s += `<line class="l-h1" x1="${m.l}" x2="${W - m.r}" y1="${ys(60)}" y2="${ys(60)}"/>`;
-    s += `<path class="l-vm" d="${path(k + "_vm")}"/><path class="l-obs" d="${path(k)}"/>`;
+    for (const sym of D.stocks) s += path(sym, "l-each");
+    s += path("SPY", "l-spy") + path("QQQ", "l-qqq") + path("avg", "l-obs");
     s += `<circle class="dot" cx="${xs(hit)}" cy="${ys(60)}" r="5"/>`;
-    s += `<text class="dl" x="${W - m.r}" y="${ys(60) + 16}" text-anchor="end">60% by ${clock(hit)}</text>`;
-    s += `<g class="hover" style="display:none"><line class="cross" y1="${m.t}" y2="${m.t + ih}"/>`;
-    s += `<circle class="dot" r="4"/><circle class="dot" r="4" style="fill:var(--muted)"/></g>`;
+    s += `<g class="hover" style="display:none"><line class="cross" y1="${m.t}" y2="${m.t + ih}"/><circle class="dot" r="4"/></g>`;
     s += `<rect x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent"/></svg>`;
     s += `<div class="tip"></div>`;
     plot.innerHTML = s;
 
     const svg = plot.querySelector("svg"), hover = svg.querySelector(".hover");
-    const [cross, d1, d2] = hover.children, tip = plot.querySelector(".tip");
+    const [cross, dot] = hover.children, tip = plot.querySelector(".tip");
     svg.lastElementChild.addEventListener("pointermove", (e) => {
       const min = ((e.clientX - svg.getBoundingClientRect().left - m.l) / iw) * 390;
       let i = 0;
       D.x.forEach((x, j) => { if (Math.abs(x - min) < Math.abs(D.x[i] - min)) i = j; });
       const x = xs(D.x[i]);
       cross.setAttribute("x1", x); cross.setAttribute("x2", x);
-      d1.setAttribute("cx", x); d1.setAttribute("cy", ys(D[k][i]));
-      d2.setAttribute("cx", x); d2.setAttribute("cy", ys(D[k + "_vm"][i]));
+      dot.setAttribute("cx", x); dot.setAttribute("cy", ys(D.avg[k][i]));
       hover.style.display = "";
-      tip.innerHTML = `<b>Set by ${clock(D.x[i])} ET</b>NVDA <span>${D[k][i].toFixed(1)}%</span><br>Chance <span>${D[k + "_vm"][i].toFixed(1)}%</span>`;
+      const v = (sym) => `<span>${D[sym][k][i].toFixed(1)}%</span>`;
+      tip.innerHTML = `<b>Set by ${clock(D.x[i])} ET</b>Stock avg ${v("avg")}<br>QQQ ${v("QQQ")}<br>SPY ${v("SPY")}`;
       tip.style.display = "block";
       const left = x + 12 + tip.offsetWidth > W ? x - 12 - tip.offsetWidth : x + 12;
       tip.style.left = `${left}px`;
