@@ -1,0 +1,15 @@
+[project]
+name = "open-extremes"
+version = "0.1.0"
+description = "Is a stock's daily high or low set in the first minutes after the open?"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alpaca-py>=0.44.0",
+    "ipykernel>=7.4.0",
+    "matplotlib>=3.11.2",
+    "nbconvert>=7.17.1",
+    "pandas>=3.0.6",
+    "pyarrow>=26.0.0",
+    "python-dotenv>=1.2.4",
+]
