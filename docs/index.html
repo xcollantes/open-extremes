@@ -149,6 +149,18 @@
   .tip b { font-family: var(--mono); font-weight: 500; font-size: 0.75rem; color: var(--muted); display: block; }
   .tip span { font-family: var(--mono); }
 
+  /* ===== Symbol picker and bucket bars ===== */
+  .pick { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pick button { font-family: var(--mono); font-size: 0.78rem; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); padding: 4px 9px; border-radius: 4px; cursor: pointer; }
+  .pick button:hover { border-color: var(--accent); color: var(--accent); }
+  .pick button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .pick button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .b-obs { fill: var(--accent); }
+  .b-obs.base { fill: var(--muted); }
+  .s-vm { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+  .band { fill: var(--code-bg); }
+  .key .sw-bar.base { background: var(--muted); }
+
   /* ===== Facts grid ===== */
   .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
   .facts div { padding: 10px 14px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 1px; }
@@ -305,8 +317,32 @@
       <p>Every stock's low or high is in on 60% of days within the first 7 to 11 minutes, by 09:41 at the latest. QQQ takes 26 minutes and SPY 40. Random prices get each stock there only 5 to 7 minutes later. Taken alone, the extremes take much longer: the low reaches 60% between 10:35 and 11:33, and the high between 11:17 and 11:55. The benchmarks' highs don't get there until after 13:00.</p>
     </div>
 
+    <div class="result" id="r-when">
+      <h3>2. When the low and the high are set</h3>
+      <p>Each bar is the share of days whose low (top) or high (bottom) was set in that 10-minute window. Pick a symbol to see its own bars.</p>
+      <div class="figure">
+        <div class="pick" role="group" aria-label="Symbol"></div>
+        <div class="key">
+          <span><span class="sw-bar" id="when-sw"></span>Share of days</span>
+          <span><svg width="24" height="10" aria-hidden="true"><path class="s-vm" d="M0,8H8V2H16V5H24"/></svg>Chance</span>
+        </div>
+        <div class="panel"><span class="panel-title">Day's low</span><div class="plot hist" data-k="low" role="img"></div></div>
+        <div class="panel"><span class="panel-title">Day's high</span><div class="plot hist" data-k="high" role="img"></div></div>
+      </div>
+      <details>
+        <summary>Show the numbers as a table</summary>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Window, ET</th><th>Low</th><th>Low, chance</th><th>High</th><th>High, chance</th></tr></thead>
+            <tbody id="when-rows"></tbody>
+          </table>
+        </div>
+      </details>
+      <p>The day has the same shape for every symbol: a tall bar at the open, a long flat middle, and a smaller rise into the close. For the average stock, 32.7% of lows and 31.1% of highs are set in the first 10 minutes, against 26.5% and 27.4% for chance. The open's extra lows are missing at the close, where only 7.3% of lows are set, against 9.7% for chance. Highs at the close match chance (9.9% vs 9.7%). QQQ and SPY have a much smaller spike at the open, 20.9% and 16.3% of lows, and set more of their highs in the last 10 minutes than chance does (13.4% and 16.5%, against 10.6% and 12.2%).</p>
+    </div>
+
     <div class="result" id="r-950">
-      <h3>2. At 09:50</h3>
+      <h3>3. At 09:50</h3>
       <div class="chart syms" role="img" aria-label="Share of days with the low or high set by 09:50, actual vs each symbol's own chance rate, against a 60% benchmark. CRWD 78.6% vs 69.4%. PLTR 76.5% vs 67.9%. GOOGL 76.4% vs 66.2%. INTC 75.2% vs 65.2%. AAPL 72.7% vs 63.6%. NVDA 72.5% vs 63.1%. TSLA 72.1% vs 63.9%. ORCL 71.4% vs 66.0%. Stock average 74.4% vs 65.7%. QQQ 54.0% vs 49.8%. SPY 44.9% vs 42.7%.">
         <div class="key">
           <span><span class="sw-bar"></span>Low or high set by 09:50</span>
@@ -352,7 +388,7 @@
     </div>
 
     <div class="result" id="r-best">
-      <h3>3. Best performers</h3>
+      <h3>4. Best performers</h3>
       <ul class="plain">
         <li>Low or high: CRWD reaches 60% first, at 7 minutes, then GOOGL at 8 and PLTR and INTC at 9. At 09:50 the order is CRWD (78.6%), PLTR (76.5%), GOOGL (76.4%) and INTC (75.2%).</li>
         <li>Low alone: CRWD (10:35), PLTR (10:51) and GOOGL (10:55) reach 60% first. At 09:50, CRWD's low is closest to the mark at 45.3%, still 15 points short.</li>
@@ -362,7 +398,7 @@
     </div>
 
     <div class="result" id="r-years">
-      <h3>4. By year</h3>
+      <h3>5. By year</h3>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Low or high by 09:50</th><th>Stock avg</th><th>QQQ</th><th>SPY</th><th>Stocks above 60%</th><th>Stocks above chance</th></tr></thead>
@@ -378,7 +414,7 @@
     </div>
 
     <div class="result" id="r-trade">
-      <h3>5. Does it pay?</h3>
+      <h3>6. Does it pay?</h3>
       <p>I tested a long trade on each symbol: buy at the close of the 09:49 bar, place a stop just under the 09:30 to 09:50 low, and sell at 16:00. The short trade is the mirror image. "Hold" is the long trade without the stop.</p>
       <div class="table-wrap">
         <table>
@@ -521,11 +557,88 @@ uv run jupyter nbconvert --to notebook --execute --inplace open_extremes.ipynb</
     });
   }
 
-  for (const plot of document.querySelectorAll(".plot")) {
+  for (const plot of document.querySelectorAll(".panels .plot")) {
     draw(plot);
     let width = plot.clientWidth;
     new ResizeObserver(() => {
       if (plot.clientWidth !== width) { width = plot.clientWidth; draw(plot); }
+    }).observe(plot);
+  }
+
+  // Share of days the low or high was set in each 10-minute window, in %,
+  // real and chance (`_vm`). From the notebook's section 5 `when` tables.
+  const B = {"low":{"NVDA":[31.1,7.5,3.9,4.4,3.4,3.1,2.7,1.9,1.8,2.9,1.4,0.6,1.3,1.1,1.3,1.3,1.2,0.8,0.9,0.6,1.0,0.8,0.9,1.4,0.8,0.8,0.3,1.0,0.9,1.4,0.9,1.1,0.6,1.4,1.3,1.0,1.9,1.9,7.6],"TSLA":[30.3,6.2,4.9,2.8,3.7,2.8,3.0,2.1,2.1,1.7,1.2,1.0,1.5,1.3,1.1,0.6,1.2,1.3,1.2,1.2,1.4,1.3,0.8,1.3,0.6,0.5,1.1,1.6,0.6,1.2,1.6,1.0,1.5,1.3,0.9,1.7,2.0,1.9,6.4],"AAPL":[32.5,8.1,3.9,5.2,1.8,1.4,1.8,1.3,1.6,1.1,0.9,1.0,1.5,1.2,0.6,1.1,0.8,1.5,1.7,1.3,0.8,1.0,1.2,1.5,0.9,0.8,1.2,1.1,0.9,1.4,1.3,1.1,0.4,1.3,1.2,1.6,1.3,2.1,9.0],"GOOGL":[35.1,6.2,4.2,4.3,3.2,2.0,2.1,1.7,1.8,1.3,2.0,1.1,1.8,0.8,0.8,1.6,0.9,1.4,1.4,1.2,0.6,0.6,0.4,0.4,0.6,1.4,1.1,0.4,1.3,0.6,1.3,0.5,0.5,1.0,1.1,1.2,2.0,1.1,8.7],"CRWD":[38.7,6.7,3.8,4.1,3.3,2.7,1.8,1.9,1.7,1.7,1.2,0.9,1.7,1.0,0.9,1.2,1.8,0.9,1.5,1.3,0.6,0.8,0.5,0.3,0.6,0.9,1.0,1.0,1.0,1.1,0.6,1.2,0.8,0.9,1.0,1.3,1.0,1.6,5.4],"ORCL":[29.1,7.1,5.0,4.3,2.7,2.8,1.5,2.3,1.3,1.5,1.2,1.1,1.2,1.6,0.8,1.1,1.3,1.1,1.2,1.5,0.9,0.6,0.8,1.0,0.6,1.0,1.5,1.1,1.3,1.4,0.5,1.3,1.3,1.2,1.5,1.6,2.0,2.7,8.3],"INTC":[31.1,7.7,4.8,3.9,2.6,3.2,1.8,1.9,1.9,1.3,1.5,0.5,0.8,1.2,1.6,0.9,0.9,1.5,1.2,0.8,0.4,0.9,1.4,1.1,0.2,0.8,0.6,1.1,1.1,0.4,0.8,1.0,1.4,1.4,1.6,2.4,1.9,2.3,8.3],"PLTR":[33.5,7.6,5.0,3.9,3.0,2.6,2.4,1.7,2.5,2.0,2.1,1.1,1.8,1.2,1.3,1.1,1.3,1.1,0.8,1.4,0.4,1.3,0.9,1.3,0.9,0.6,1.0,0.8,0.8,0.9,0.5,0.6,0.4,1.6,1.4,1.1,2.0,1.7,4.5],"avg":[32.7,7.1,4.4,4.1,3.0,2.6,2.1,1.9,1.9,1.7,1.4,0.9,1.5,1.2,1.0,1.1,1.2,1.2,1.2,1.2,0.8,0.9,0.8,1.0,0.7,0.8,1.0,1.0,1.0,1.0,0.9,1.0,0.9,1.2,1.2,1.5,1.8,1.9,7.3],"SPY":[16.3,7.7,4.4,4.0,3.3,2.6,2.5,1.9,2.6,1.8,2.1,1.0,2.1,1.4,1.0,1.8,1.2,1.2,1.6,1.4,1.0,1.5,1.3,1.4,1.8,1.4,1.9,1.7,1.1,1.3,1.5,1.6,1.0,1.1,1.8,2.0,1.8,3.0,9.8],"QQQ":[20.9,7.3,5.4,4.1,4.8,2.7,2.8,2.1,1.6,1.9,1.9,0.9,2.5,1.7,0.8,1.7,0.6,1.1,1.0,1.2,1.1,1.1,1.0,1.1,1.6,1.0,1.3,1.1,1.6,0.8,1.2,0.9,1.2,1.4,1.6,1.6,2.0,3.0,8.6]},"low_vm":{"NVDA":[25.0,6.6,4.7,3.8,2.8,2.4,2.4,2.0,1.9,1.8,1.5,1.5,1.3,1.2,1.2,1.1,1.1,1.0,1.1,0.9,0.9,1.1,1.1,1.0,1.1,1.0,1.0,1.4,1.1,1.1,1.2,1.3,1.3,1.6,1.7,1.8,2.2,3.0,10.0],"TSLA":[25.5,6.5,4.7,3.9,2.9,2.5,2.4,2.0,1.8,1.8,1.4,1.5,1.5,1.2,1.2,1.0,1.1,1.1,1.1,1.0,1.0,1.1,1.1,1.0,1.2,1.1,1.0,1.4,1.1,1.1,1.2,1.3,1.3,1.6,1.7,1.8,2.2,3.0,8.9],"AAPL":[26.0,5.9,4.1,3.4,2.7,2.3,2.1,1.8,1.7,1.7,1.4,1.6,1.3,1.2,1.1,1.0,1.0,1.0,1.0,0.9,0.9,1.1,1.1,1.0,1.1,1.0,1.0,1.3,1.2,1.1,1.3,1.2,1.3,1.4,1.6,1.6,2.0,2.9,12.4],"GOOGL":[27.3,6.1,4.4,3.6,2.8,2.2,2.2,1.9,1.7,1.7,1.5,1.5,1.3,1.2,1.2,1.1,1.0,1.0,1.0,0.9,0.9,1.1,1.0,1.0,1.1,1.0,1.0,1.4,1.2,1.1,1.2,1.2,1.2,1.3,1.5,1.5,2.0,2.8,10.7],"CRWD":[28.2,7.0,4.9,3.8,2.8,2.4,2.2,2.0,1.7,1.7,1.4,1.4,1.3,1.1,1.1,1.1,1.0,1.0,1.0,1.0,1.0,1.1,1.1,1.0,1.1,1.0,0.9,1.3,1.0,1.1,1.2,1.2,1.2,1.4,1.6,1.6,2.0,2.7,8.2],"ORCL":[26.7,6.4,4.4,3.6,2.8,2.3,2.2,1.8,1.9,1.8,1.5,1.5,1.3,1.2,1.2,1.1,1.1,1.0,1.0,0.9,0.9,1.1,1.0,1.0,1.1,1.0,1.0,1.3,1.1,1.2,1.2,1.2,1.2,1.5,1.7,1.7,2.2,3.1,9.8],"INTC":[26.3,6.4,4.6,3.7,2.8,2.4,2.3,1.9,1.8,1.8,1.5,1.5,1.5,1.2,1.2,1.0,1.0,1.1,1.0,0.9,1.0,1.0,1.0,1.0,1.1,1.1,1.0,1.3,1.1,1.1,1.1,1.2,1.3,1.6,1.7,1.7,2.1,3.0,9.8],"PLTR":[27.4,6.9,4.7,3.9,2.9,2.5,2.3,2.0,1.8,1.7,1.5,1.5,1.4,1.2,1.2,1.1,1.0,1.0,1.1,1.0,0.9,1.1,1.0,1.0,1.1,1.0,0.9,1.4,1.1,1.1,1.2,1.2,1.2,1.5,1.6,1.7,2.1,2.8,8.2],"avg":[26.5,6.5,4.6,3.7,2.8,2.4,2.3,1.9,1.8,1.8,1.5,1.5,1.4,1.2,1.2,1.1,1.0,1.0,1.0,0.9,1.0,1.1,1.1,1.0,1.1,1.0,1.0,1.4,1.1,1.1,1.2,1.2,1.3,1.5,1.6,1.7,2.1,2.9,9.7],"SPY":[15.6,5.5,4.3,3.9,2.8,2.7,2.5,2.2,2.0,1.9,1.7,1.8,1.5,1.4,1.3,1.2,1.1,1.2,1.3,1.1,1.1,1.4,1.2,1.4,1.3,1.2,1.3,1.8,1.3,1.5,1.7,1.7,1.7,1.8,2.0,2.1,2.6,3.7,12.2],"QQQ":[18.6,6.0,4.6,4.1,2.9,2.8,2.5,2.2,2.1,1.9,1.6,1.7,1.5,1.4,1.3,1.1,1.1,1.1,1.2,1.0,1.1,1.3,1.2,1.3,1.3,1.2,1.1,1.6,1.2,1.3,1.5,1.6,1.6,1.7,1.9,1.9,2.4,3.2,10.6]},"high":{"NVDA":[28.9,7.0,4.4,3.3,2.1,1.8,1.7,1.7,1.5,1.3,2.3,1.1,1.1,1.3,1.2,1.4,1.4,0.9,0.6,0.8,1.0,1.0,1.1,1.1,0.6,0.8,0.9,1.4,1.9,0.9,1.1,0.8,1.5,2.0,2.0,1.4,1.4,1.6,11.9],"TSLA":[31.9,5.5,4.0,5.5,2.7,1.5,1.9,2.5,1.9,1.6,1.9,1.0,1.6,1.5,1.4,1.1,0.9,0.9,1.0,0.9,1.0,1.5,1.0,1.0,0.5,0.3,0.8,1.4,0.8,1.3,0.9,1.3,1.1,1.3,1.7,1.3,1.4,2.5,8.2],"AAPL":[29.9,5.3,4.0,3.9,2.4,2.9,2.1,1.3,0.9,1.8,2.1,1.4,1.2,1.4,1.7,0.9,1.1,1.1,0.4,0.6,1.5,0.9,1.4,0.8,1.2,1.0,0.9,1.7,0.9,0.8,1.0,0.5,1.2,1.5,1.0,1.2,1.6,2.5,12.5],"GOOGL":[32.1,6.0,4.3,3.8,2.5,2.4,1.4,2.4,0.6,1.6,1.1,1.5,0.9,0.8,1.2,1.3,1.0,1.1,1.4,1.1,0.6,1.1,1.0,1.6,1.2,0.8,0.8,1.1,1.3,1.3,0.9,1.0,1.2,0.4,1.2,0.9,1.7,2.5,11.5],"CRWD":[29.8,6.8,4.0,4.4,3.1,1.9,2.7,2.0,1.1,1.8,1.6,0.8,1.0,0.9,1.4,0.5,1.3,1.0,1.4,0.8,1.0,1.2,0.3,0.6,1.4,1.1,1.0,1.4,1.0,0.8,1.2,1.0,1.6,1.6,2.6,2.3,1.7,1.7,8.6],"ORCL":[32.5,5.6,3.8,4.0,2.9,1.9,1.6,1.6,1.4,1.2,1.6,1.4,1.3,1.1,1.0,0.8,0.6,1.4,1.0,1.8,0.6,0.9,0.5,1.3,0.9,0.2,1.6,1.1,1.2,0.6,1.0,1.4,1.3,1.2,1.6,1.3,1.2,2.8,11.0],"INTC":[32.5,6.2,2.9,3.0,4.1,2.1,2.5,2.5,1.1,1.6,1.2,1.1,1.2,1.2,1.8,0.8,0.8,0.4,0.8,1.0,1.2,1.4,1.5,0.9,1.1,1.2,1.6,1.4,1.0,0.8,1.0,1.4,1.3,1.5,1.5,1.4,1.3,1.8,8.3],"PLTR":[30.8,8.3,3.4,3.2,2.8,2.6,2.5,2.6,1.4,1.7,1.3,1.4,0.9,1.3,1.5,1.1,0.9,1.6,1.7,0.4,0.5,0.8,1.3,0.8,0.6,0.8,0.8,1.2,1.2,0.6,1.4,1.8,0.9,2.1,1.8,1.4,1.7,1.4,7.6],"avg":[31.1,6.3,3.8,3.9,2.8,2.1,2.1,2.1,1.2,1.6,1.6,1.2,1.1,1.2,1.4,1.0,1.0,1.0,1.0,0.9,0.9,1.1,1.0,1.0,0.9,0.8,1.0,1.3,1.1,0.9,1.0,1.1,1.2,1.5,1.7,1.4,1.5,2.1,9.9],"SPY":[13.6,7.2,2.7,4.9,2.6,2.0,1.7,2.0,0.6,2.8,1.7,1.2,1.7,1.1,1.0,1.2,1.2,1.2,0.9,1.0,1.8,1.1,1.3,1.4,1.2,1.3,1.4,1.8,0.9,1.7,2.0,2.0,1.7,2.6,2.0,2.6,2.4,1.9,16.5],"QQQ":[19.1,6.7,3.4,3.8,2.3,2.3,1.7,1.7,1.4,1.9,1.5,2.0,1.4,1.3,1.5,1.0,1.7,1.3,0.6,0.8,1.2,1.0,1.3,1.2,1.3,0.8,2.0,1.3,1.5,1.0,1.7,2.0,2.0,2.5,2.7,1.9,2.0,1.8,13.4]},"high_vm":{"NVDA":[25.8,6.4,4.4,3.8,2.9,2.6,2.2,2.2,1.7,1.6,1.4,1.4,1.2,1.4,1.0,1.1,1.1,1.1,1.0,1.2,1.1,1.1,1.1,1.1,1.1,1.0,1.0,1.2,1.0,1.2,1.3,1.1,1.3,1.5,1.5,1.8,2.0,3.1,9.9],"TSLA":[26.5,6.2,4.4,3.9,2.8,2.7,2.3,2.2,1.6,1.7,1.3,1.5,1.3,1.3,1.1,1.1,1.1,1.1,1.0,1.2,1.1,1.2,1.1,1.1,1.1,1.1,1.0,1.2,1.1,1.2,1.3,1.1,1.4,1.4,1.5,1.7,2.0,3.1,8.8],"AAPL":[26.7,5.7,3.9,3.5,2.7,2.3,2.0,2.1,1.5,1.6,1.3,1.4,1.3,1.3,1.1,1.0,1.1,1.1,1.0,1.1,1.0,1.2,1.2,1.1,1.0,1.0,1.1,1.2,1.2,1.2,1.3,1.1,1.3,1.4,1.5,1.5,1.8,3.0,12.3],"GOOGL":[27.9,5.9,4.2,3.7,2.8,2.4,2.1,2.1,1.5,1.7,1.4,1.4,1.3,1.3,1.0,1.1,1.1,1.1,0.9,1.1,1.0,1.1,1.1,1.1,1.0,1.0,1.1,1.3,1.1,1.1,1.3,1.1,1.2,1.3,1.4,1.5,1.8,2.8,10.6],"CRWD":[29.0,6.6,4.7,3.8,2.8,2.6,2.1,2.1,1.5,1.6,1.3,1.3,1.2,1.3,1.0,1.0,1.2,1.1,1.0,1.2,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.2,1.1,1.2,1.3,1.0,1.3,1.4,1.4,1.5,1.9,2.7,8.2],"ORCL":[27.6,6.2,4.2,3.6,2.7,2.4,2.1,2.1,1.6,1.6,1.4,1.4,1.3,1.3,1.1,1.1,1.1,1.1,0.9,1.1,1.1,1.1,1.1,1.1,1.1,1.0,1.1,1.2,1.1,1.2,1.2,1.0,1.3,1.4,1.5,1.6,2.1,3.1,9.8],"INTC":[27.2,6.2,4.3,3.7,2.8,2.6,2.1,2.1,1.6,1.7,1.3,1.4,1.3,1.3,1.1,1.0,1.1,1.1,1.0,1.1,1.1,1.1,1.1,1.2,1.0,1.0,1.1,1.1,1.1,1.2,1.2,1.0,1.4,1.4,1.5,1.6,2.0,3.0,9.9],"PLTR":[28.2,6.6,4.5,3.8,2.9,2.6,2.2,2.2,1.6,1.7,1.4,1.3,1.2,1.3,1.1,1.1,1.1,1.0,1.0,1.2,1.1,1.2,1.1,1.1,1.0,1.1,1.0,1.2,1.1,1.2,1.2,1.0,1.3,1.4,1.5,1.6,1.9,2.9,8.0],"avg":[27.4,6.2,4.3,3.7,2.8,2.5,2.1,2.2,1.6,1.7,1.3,1.4,1.3,1.3,1.1,1.1,1.1,1.1,1.0,1.1,1.1,1.1,1.1,1.1,1.0,1.0,1.1,1.2,1.1,1.2,1.3,1.1,1.3,1.4,1.5,1.6,1.9,3.0,9.7],"SPY":[16.2,5.4,4.1,3.9,2.9,2.7,2.4,2.5,1.8,1.8,1.6,1.6,1.5,1.4,1.2,1.1,1.2,1.3,1.2,1.3,1.3,1.5,1.3,1.4,1.3,1.2,1.3,1.5,1.4,1.5,1.6,1.6,1.7,1.8,1.8,2.0,2.5,3.7,12.2],"QQQ":[19.3,6.0,4.3,4.1,3.0,2.8,2.4,2.5,1.8,1.8,1.6,1.6,1.4,1.5,1.2,1.2,1.2,1.2,1.1,1.3,1.2,1.4,1.3,1.3,1.2,1.1,1.3,1.5,1.3,1.4,1.6,1.4,1.6,1.7,1.8,1.9,2.2,3.2,10.6]}};
+  const SYMS = ["avg", ...D.stocks, "QQQ", "SPY"];
+  const name = (s) => (s === "avg" ? "Stock avg" : s);
+  const span = (i) => `${clock(i * 10)}–${clock(i * 10 + 10)}`;
+  let sym = "avg";
+
+  // A bar with rounded top corners, square at the baseline.
+  const bar = (x, y, w, y0) => {
+    const r = Math.min(2, w / 2, y0 - y);
+    return `M${x},${y0}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y0}Z`;
+  };
+
+  function hist(plot) {
+    const k = plot.dataset.k, obs = B[k][sym], vm = B[k + "_vm"][sym], n = obs.length;
+    const W = plot.clientWidth, H = 200;
+    const m = { l: 36, r: 8, t: 8, b: 24 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b, bw = iw / n, gap = Math.min(2, bw / 4);
+    const ys = (v) => m.t + (1 - v / 40) * ih;
+    const xs = (i) => m.l + i * bw;
+    const cls = sym === "QQQ" || sym === "SPY" ? "b-obs base" : "b-obs";
+
+    let s = `<svg width="${W}" height="${H}" aria-hidden="true"><rect class="band" y="${m.t}" width="${bw}" height="${ih}" style="display:none"/>`;
+    for (let v = 0; v <= 40; v += 10) {
+      s += `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${ys(v)}" y2="${ys(v)}"/>`;
+      s += `<text x="${m.l - 6}" y="${ys(v) + 4}" text-anchor="end">${v}%</text>`;
+    }
+    for (const t of W > 520 ? [0, 90, 150, 210, 270, 330, 390] : [0, 90, 210, 390]) {
+      const a = t === 0 ? "start" : t === 390 ? "end" : "middle";
+      s += `<text x="${xs(t / 10)}" y="${H - 6}" text-anchor="${a}">${clock(t)}</text>`;
+    }
+    obs.forEach((v, i) => { s += `<path class="${cls}" d="${bar(xs(i) + gap / 2, ys(v), bw - gap, ys(0))}"/>`; });
+    s += `<path class="s-vm" d="M${m.l},${ys(vm[0])}` + vm.map((v, i) => `V${ys(v)}H${xs(i + 1)}`).join("") + `"/>`;
+    s += `<rect x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent"/></svg><div class="tip"></div>`;
+    plot.innerHTML = s;
+    plot.setAttribute("aria-label", `${name(sym)}: share of days the ${k} was set in each 10-minute window. ${span(0)}: ${obs[0]}% (chance ${vm[0]}%). ${span(n - 1)}: ${obs[n - 1]}% (chance ${vm[n - 1]}%). The table below lists every window.`);
+
+    const svg = plot.querySelector("svg"), band = svg.firstElementChild, tip = plot.querySelector(".tip");
+    const show = (e) => {
+      const i = Math.max(0, Math.min(n - 1, Math.floor((e.clientX - svg.getBoundingClientRect().left - m.l) / bw)));
+      band.setAttribute("x", xs(i));
+      band.style.display = "";
+      const word = k === "low" ? "Low" : "High";
+      tip.innerHTML = `<b>${span(i)} ET · ${name(sym)}</b>${word} set in this window <span>${obs[i].toFixed(1)}%</span><br>Chance <span>${vm[i].toFixed(1)}%</span><br>${word} set by ${clock(i * 10 + 10)} <span>${D[sym][k][2 * i + 2].toFixed(1)}%</span>`;
+      tip.style.display = "block";
+      const x = xs(i);
+      tip.style.left = `${x + bw + 8 + tip.offsetWidth > W ? x - 8 - tip.offsetWidth : x + bw + 8}px`;
+      tip.style.top = `${m.t + 12}px`;
+    };
+    svg.lastElementChild.addEventListener("pointermove", show);
+    svg.lastElementChild.addEventListener("pointerdown", show);
+    svg.lastElementChild.addEventListener("pointerleave", () => {
+      band.style.display = "none";
+      tip.style.display = "none";
+    });
+  }
+
+  function pickSym(s) {
+    sym = s;
+    for (const b of document.querySelectorAll(".pick button")) b.setAttribute("aria-pressed", b.dataset.s === s);
+    document.getElementById("when-sw").classList.toggle("base", s === "QQQ" || s === "SPY");
+    for (const plot of document.querySelectorAll(".hist")) hist(plot);
+    document.getElementById("when-rows").innerHTML = B.low[s].map((_, i) =>
+      `<tr><th>${span(i)}</th>` + ["low", "low_vm", "high", "high_vm"].map((c) => `<td class="num">${B[c][s][i].toFixed(1)}%</td>`).join("") + "</tr>").join("");
+  }
+
+  document.querySelector(".pick").innerHTML = SYMS.map((s) => `<button type="button" data-s="${s}">${name(s)}</button>`).join("");
+  document.querySelector(".pick").addEventListener("click", (e) => { if (e.target.dataset.s) pickSym(e.target.dataset.s); });
+  pickSym("avg");
+  for (const plot of document.querySelectorAll(".hist")) {
+    let width = plot.clientWidth;
+    new ResizeObserver(() => {
+      if (plot.clientWidth !== width) { width = plot.clientWidth; hist(plot); }
     }).observe(plot);
   }
 </script>
